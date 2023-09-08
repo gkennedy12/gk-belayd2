@@ -1,0 +1,55 @@
+dnl # LICENSE TBD
+dnl #
+dnl # Copyright (c) 2023 Oracle and/or its affiliates.
+dnl # Author: Tom Hromatka <tom.hromatka@oracle.com>
+dnl #
+
+AC_INIT([belayer],[0.0.0])
+
+dnl #
+dnl # autoconf configuration
+dnl #
+AC_CONFIG_AUX_DIR([build-aux])
+AC_CONFIG_HEADERS([configure.h])
+AC_CONFIG_MACRO_DIR([m4])
+AM_INIT_AUTOMAKE(-Wall foreign)
+
+dnl #
+dnl # build flags
+dnl #
+AM_CPPFLAGS="-I\${top_srcdir}/include -I\${top_builddir}/include"
+AM_CFLAGS="-Wall"
+AM_LDFLAGS="-Wl,-z -Wl,relro"
+AC_SUBST([AM_CPPFLAGS])
+AC_SUBST([AM_CFLAGS])
+AC_SUBST([AM_LDFLAGS])
+
+dnl #
+dnl # version information
+dnl #
+VERSION_MAJOR=$(echo ${VERSION} | cut -d'.' -f 1)
+VERSION_MINOR=$(echo ${VERSION} | cut -d'.' -f 2)
+VERSION_MICRO=$(echo ${VERSION} | cut -d'.' -f 3)
+AC_SUBST([VERSION_MAJOR])
+AC_SUBST([VERSION_MINOR])
+AC_SUBST([VERSION_MICRO])
+
+dnl #
+dnl # Determine which C compiler to use
+dnl #
+AC_PROG_CC
+
+dnl #
+dnl # makefiles
+dnl #
+AC_CONFIG_FILES([
+	Makefile
+	include/Makefile
+	src/Makefile
+	tests/Makefile
+])
+
+dnl #
+dnl # generate the configure and makefiles
+dnl #
+AC_OUTPUT
