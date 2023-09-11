@@ -7,6 +7,8 @@
  */
 #include <stdlib.h>
 #include <getopt.h>
+#include <string.h>
+#include <unistd.h>
 #include <stdio.h>
 
 #include "belayd-internal.h"
@@ -38,21 +40,42 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 
 	int ret = 0;
 
+	memset(opts->config, 0, FILENAME_MAX);
+	strncpy(opts->config, default_config_file, FILENAME_MAX - 1);
+	opts->interval = default_interval;
+
 	while (1) {
 		int c;
 
 		c = getopt_long(argc, argv, short_options, long_options, NULL);
+		if (c == -1)
+			break;
 
 		switch (c) {
+		case 'c':
+			strncpy(opts->config, optarg, FILENAME_MAX - 1);
+			opts->config[FILENAME_MAX - 1] = '\0';
+			break;
 		case 'h':
 			usage(stdout);
 			exit(0);
+		case 'i':
+			opts->interval = atoi(optarg);
+			if (opts->interval < 1) {
+				ret = 1;
+				goto err;
+			}
+			break;
 
 		default:
-			usage(stderr);
-			exit(0);
+			ret = 1;
+			goto err;
 		}
 	}
+
+err:
+	if (ret)
+		usage(stderr);
 
 	return ret;
 }
@@ -65,6 +88,11 @@ int main(int argc, char *argv[])
 	ret = parse_opts(argc, argv, &opts);
 	if (ret)
 		goto out;
+
+	while(1) {
+		printf("cfg = %s\n", opts.config);
+		sleep(opts.interval);
+	}
 
 out:
 	return ret;
