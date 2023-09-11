@@ -4,7 +4,7 @@ dnl # Copyright (c) 2023 Oracle and/or its affiliates.
 dnl # Author: Tom Hromatka <tom.hromatka@oracle.com>
 dnl #
 
-AC_INIT([belayer],[0.0.0])
+AC_INIT([belayd],[0.0.0])
 
 dnl #
 dnl # autoconf configuration
