@@ -12,7 +12,7 @@ dnl #
 AC_CONFIG_AUX_DIR([build-aux])
 AC_CONFIG_HEADERS([configure.h])
 AC_CONFIG_MACRO_DIR([m4])
-AM_INIT_AUTOMAKE(-Wall foreign)
+AM_INIT_AUTOMAKE(-Wall foreign subdir-objects)
 
 dnl #
 dnl # build flags
@@ -38,6 +38,15 @@ dnl #
 dnl # Determine which C compiler to use
 dnl #
 AC_PROG_CC
+
+dnl #
+dnl # Dependencies
+dnl #
+AC_CHECK_LIB([json-c], [json_object_object_get_ex], [],
+	     [AC_MSG_ERROR([please install json-c])])
+
+AC_CHECK_HEADERS([json-c/json.h], [],
+		 [AC_MSG_ERROR([please install the json-c development package])])
 
 dnl #
 dnl # makefiles

@@ -1,6 +1,6 @@
 // LICENSE TBD
 /**
- * Internal include header file for belayd
+ * Main loop for belayd
  *
  * Copyright (c) 2023 Oracle and/or its affiliates.
  * Author: Tom Hromatka <tom.hromatka@oracle.com>
@@ -40,7 +40,7 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 
 	int ret = 0;
 
-	memset(opts->config, 0, FILENAME_MAX);
+	memset(opts, 0, sizeof(struct belayd_opts));
 	strncpy(opts->config, default_config_file, FILENAME_MAX - 1);
 	opts->interval = default_interval;
 
@@ -80,20 +80,87 @@ err:
 	return ret;
 }
 
+void cleanup(struct belayd_opts *opts)
+{
+	struct rule *rule, *rule_next;
+	struct cause *cse, *cse_next;
+
+	rule = opts->rules;
+
+	while (rule) {
+		rule_next = rule->next;
+		cse = rule->causes;
+
+		while (cse) {
+			cse_next = cse->next;
+			cause_exits[cse->idx](cse);
+			if (cse->name)
+				free(cse->name);
+
+			free(cse);
+			cse = cse_next;
+		}
+
+		if (rule->name)
+			free(rule->name);
+
+		free(rule);
+		rule = rule_next;
+	}
+}
+
 int main(int argc, char *argv[])
 {
 	struct belayd_opts opts;
+	struct cause *cse;
+	struct rule *rule;
 	int ret;
 
 	ret = parse_opts(argc, argv, &opts);
 	if (ret)
 		goto out;
 
-	while(1) {
-		printf("cfg = %s\n", opts.config);
+	ret = parse_config(&opts);
+	if (ret)
+		goto out;
+
+	while (1) {
+		rule = opts.rules;
+
+		while (rule) {
+			cse = rule->causes;
+
+			while (cse) {
+				ret = cause_mains[cse->idx](cse, opts.interval);
+				if (ret < 0)
+					goto out;
+				else if (ret > 0)
+					/* this cause tripped */
+					printf("tripped\n");
+				else if (ret == 0)
+					/*
+					 * this cause did not trip.  skip all the remaining causes
+					 * in this rule
+					 */
+					break;
+				cse = cse->next;
+			}
+
+			if (ret > 0)
+				/*
+				 * The cause(s) for this rule were triggered, invoke the
+				 * effect(s)
+				 */
+				;
+
+			rule = rule->next;
+		}
+
 		sleep(opts.interval);
 	}
 
 out:
+	cleanup(&opts);
+
 	return ret;
 }
