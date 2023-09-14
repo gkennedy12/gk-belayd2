@@ -19,6 +19,7 @@
 
 enum cause_enum {
 	TIME_OF_DAY = 0,
+	DAYS_OF_THE_WEEK,
 
 	CAUSE_CNT
 };
@@ -54,5 +55,10 @@ int time_of_day_init(struct cause * const cse, struct json_object *cse_obj);
 int time_of_day_main(struct cause * const cse, int time_since_last_run);
 void time_of_day_exit(struct cause * const cse);
 void time_of_day_print(const struct cause * const cse);
+
+int days_of_the_week_init(struct cause * const cse, struct json_object *cse_obj);
+int days_of_the_week_main(struct cause * const cse, int time_since_last_run);
+void days_of_the_week_exit(struct cause * const cse);
+void days_of_the_week_print(const struct cause * const cse);
 
 #endif /* __BELAYD_CAUSE_H */

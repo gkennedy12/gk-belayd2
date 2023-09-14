@@ -1,4 +1,5 @@
 SOURCES = \
+	causes/days_of_the_week.c \
 	causes/time_of_day.c \
 	cause.c \
 	effects/print.c \
