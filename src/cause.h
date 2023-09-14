@@ -27,6 +27,7 @@ struct cause {
 	/* populated by belayd */
 	enum cause_enum idx;
 	char *name;
+	const struct cause_functions *fns;
 	struct cause *next;
 
 	/* private data store for each cause plugin */
@@ -36,17 +37,22 @@ struct cause {
 typedef int (*cause_init)(struct cause * const cse, struct json_object *cse_obj);
 typedef int (*cause_main)(struct cause * const cse, int time_since_last_run);
 typedef void (*cause_exit)(struct cause * const cse);
+typedef void (*cause_print)(const struct cause * const cse);
+
+struct cause_functions {
+	cause_init init;
+	cause_main main;
+	cause_exit exit;
+	cause_print print;
+};
 
 extern const char * const cause_names[];
-extern const cause_init cause_inits[];
-extern const cause_main cause_mains[];
-extern const cause_exit cause_exits[];
+extern const struct cause_functions cause_fns[];
 
-/*
- * time_of_day.c
- */
+
 int time_of_day_init(struct cause * const cse, struct json_object *cse_obj);
 int time_of_day_main(struct cause * const cse, int time_since_last_run);
 void time_of_day_exit(struct cause * const cse);
+void time_of_day_print(const struct cause * const cse);
 
 #endif /* __BELAYD_CAUSE_H */

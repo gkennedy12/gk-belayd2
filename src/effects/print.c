@@ -93,7 +93,11 @@ int print_main(struct effect * const eff)
 
 	cse = opts->cse;
 	while (cse) {
-		fprintf(opts->file, "\t%s\n", cse->name);
+		if (cse->fns->print)
+			(*cse->fns->print)(cse);
+		else
+			fprintf(opts->file, "\t%s\n", cse->name);
+
 		cse = cse->next;
 	}
 

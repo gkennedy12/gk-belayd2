@@ -73,8 +73,9 @@ static int parse_cause(struct rule * const rule, struct json_object * const caus
 		if (strncmp(name, cause_names[i], strlen(cause_names[i])) == 0) {
 			found_cause = true;
 			cse->idx = i;
+			cse->fns = &cause_fns[i];
 
-			ret = cause_inits[i](cse, cause_obj);
+			ret = (*cse->fns->init)(cse, cause_obj);
 			if (ret)
 				goto error;
 

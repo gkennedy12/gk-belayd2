@@ -21,20 +21,8 @@ const char * const cause_names[] = {
 static_assert(ARRAY_SIZE(cause_names) == CAUSE_CNT,
 	      "cause_names[] must be same length as CAUSE_CNT");
 
-const cause_init cause_inits[] = {
-	time_of_day_init,
+const struct cause_functions cause_fns[] = {
+	{time_of_day_init, time_of_day_main, time_of_day_exit, time_of_day_print},
 };
-static_assert(ARRAY_SIZE(cause_inits) == CAUSE_CNT,
-	      "cause_inits[] must be same length as CAUSE_CNT");
-
-const cause_main cause_mains[] = {
-	time_of_day_main,
-};
-static_assert(ARRAY_SIZE(cause_mains) == CAUSE_CNT,
-	      "cause_mains[] must be same length as CAUSE_CNT");
-
-const cause_exit cause_exits[] = {
-	time_of_day_exit,
-};
-static_assert(ARRAY_SIZE(cause_exits) == CAUSE_CNT,
-	      "cause_exits[] must be same length as CAUSE_CNT");
+static_assert(ARRAY_SIZE(cause_fns) == CAUSE_CNT,
+	      "cause_fns[] must be same length as CAUSE_CNT");

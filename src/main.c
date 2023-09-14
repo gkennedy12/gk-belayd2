@@ -94,7 +94,7 @@ void cleanup(struct belayd_opts *opts)
 		cse = rule->causes;
 		while (cse) {
 			cse_next = cse->next;
-			cause_exits[cse->idx](cse);
+			(*cse->fns->exit)(cse);
 			if (cse->name)
 				free(cse->name);
 
@@ -144,13 +144,13 @@ int main(int argc, char *argv[])
 			cse = rule->causes;
 
 			while (cse) {
-				ret = cause_mains[cse->idx](cse, opts.interval);
+				ret = (*cse->fns->main)(cse, opts.interval);
 				if (ret < 0)
 					goto out;
 				else if (ret == 0)
 					/*
 					 * this cause did not trip.  skip all the remaining causes
-					 * in this rule
+					 * in this rule because the effect will not be invoked.
 					 */
 					break;
 				else if (ret > 0)

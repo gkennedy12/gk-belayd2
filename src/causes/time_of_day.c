@@ -157,3 +157,8 @@ void time_of_day_exit(struct cause * const cse)
 
 	free(opts);
 }
+
+void time_of_day_print(const struct cause * const cse)
+{
+	printf("time of day\n");
+}
