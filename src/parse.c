@@ -33,27 +33,41 @@ static int get_file_size(FILE * const fd, long * const file_size)
 	return ret;
 }
 
+int parse_string(struct json_object * const obj, const char * const key, const char **value)
+{
+	struct json_object *key_obj;
+	json_bool exists;
+	int ret = 0;
+
+	exists = json_object_object_get_ex(obj, key, &key_obj);
+	if (!exists || !key_obj) {
+		ret = -EINVAL;
+		goto error;
+	}
+
+	*value = json_object_get_string(key_obj);
+	if (!(*value)) {
+		ret = -EINVAL;
+		goto error;
+	}
+
+	return ret;
+
+error:
+	return ret;
+}
+
 static int parse_cause(struct rule * const rule, struct json_object * const cause_obj)
 {
-	struct json_object *name_obj;
 	bool found_cause = false;
 	struct cause *cse = NULL;
-	json_bool exists;
 	const char *name;
 	int ret = 0;
 	int i;
 
-	exists = json_object_object_get_ex(cause_obj, "name", &name_obj);
-	if (!exists || !name_obj) {
-		ret = -EINVAL;
+	ret = parse_string(cause_obj, "name", &name);
+	if (ret )
 		goto error;
-	}
-
-	name = json_object_get_string(name_obj);
-	if (!name) {
-		ret = -EINVAL;
-		goto error;
-	}
 
 	cse = malloc(sizeof(struct cause));
 	if (!cse) {
@@ -111,25 +125,15 @@ error:
 
 static int parse_effect(struct rule * const rule, struct json_object * const effect_obj)
 {
-	struct json_object *name_obj;
 	bool found_effect = false;
 	struct effect *eff = NULL;
-	json_bool exists;
 	const char *name;
 	int ret = 0;
 	int i;
 
-	exists = json_object_object_get_ex(effect_obj, "name", &name_obj);
-	if (!exists || !name_obj) {
-		ret = -EINVAL;
+	ret = parse_string(effect_obj, "name", &name);
+	if (ret )
 		goto error;
-	}
-
-	name = json_object_get_string(name_obj);
-	if (!name) {
-		ret = -EINVAL;
-		goto error;
-	}
 
 	eff = malloc(sizeof(struct effect));
 	if (!eff) {
@@ -187,24 +191,16 @@ error:
 
 static int parse_rule(struct belayd_opts * const opts, struct json_object * const rule_obj)
 {
-	struct json_object *name_obj, *causes_obj, *cause_obj, *effects_obj, *effect_obj;
+	struct json_object *causes_obj, *cause_obj, *effects_obj, *effect_obj;
 	int i, cause_cnt, effect_cnt;
 	struct rule *rule = NULL;
 	json_bool exists;
 	const char *name;
 	int ret = 0;
 
-	exists = json_object_object_get_ex(rule_obj, "name", &name_obj);
-	if (!exists || !name_obj) {
-		ret = -EINVAL;
+	ret = parse_string(rule_obj, "name", &name);
+	if (ret )
 		goto error;
-	}
-
-	name = json_object_get_string(name_obj);
-	if (!name) {
-		ret = -EINVAL;
-		goto error;
-	}
 
 	rule = malloc(sizeof(struct rule));
 	if (!rule) {

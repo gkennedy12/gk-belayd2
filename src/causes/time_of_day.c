@@ -37,7 +37,7 @@ struct time_of_day_opts {
 
 int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
 {
-	struct json_object *args_obj, *time_obj, *op_obj;
+	struct json_object *args_obj;
 	struct time_of_day_opts *opts;
 	const char *time_str, *op_str;
 	json_bool exists;
@@ -59,17 +59,9 @@ int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
 		goto error;
 	}
 
-	exists = json_object_object_get_ex(args_obj, "time", &time_obj);
-	if (!exists || !time_obj) {
-		ret = -EINVAL;
+	ret = parse_string(args_obj, "time", &time_str);
+	if (ret)
 		goto error;
-	}
-
-	time_str = json_object_get_string(time_obj);
-	if (!time_str) {
-		ret = -EINVAL;
-		goto error;
-	}
 
 	tret = strptime(time_str, "%H:%M:%S", &time);
 	if (!tret) {
@@ -83,17 +75,9 @@ int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
 
 	memcpy(&opts->time, &time, sizeof(struct tm));
 
-	exists = json_object_object_get_ex(args_obj, "operator", &op_obj);
-	if (!exists || !op_obj) {
-		ret = -EINVAL;
+	ret = parse_string(args_obj, "operator", &op_str);
+	if (ret)
 		goto error;
-	}
-
-	op_str = json_object_get_string(op_obj);
-	if (!op_str) {
-		ret = -EINVAL;
-		goto error;
-	}
 
 	found_op = false;
 	for (i = 0; i < OP_CNT; i++) {
