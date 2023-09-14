@@ -31,6 +31,7 @@ static_assert(ARRAY_SIZE(op_names) == OP_CNT,
 	      "op_names[] must be same length as OP_CNT");
 
 struct time_of_day_opts {
+	char *time_str;
 	enum op_enum op;
 	struct tm time;
 };
@@ -53,6 +54,8 @@ int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
 		goto error;
 	}
 
+	memset(opts, 0, sizeof(struct time_of_day_opts));
+
 	exists = json_object_object_get_ex(cse_obj, "args", &args_obj);
 	if (!exists || !args_obj) {
 		ret = -EINVAL;
@@ -62,6 +65,14 @@ int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
 	ret = parse_string(args_obj, "time", &time_str);
 	if (ret)
 		goto error;
+
+	opts->time_str = malloc(sizeof(char) * strlen(time_str));
+	if (!opts->time_str) {
+		ret = -ENOMEM;
+		goto error;
+	}
+
+	strcpy(opts->time_str, time_str);
 
 	tret = strptime(time_str, "%H:%M:%S", &time);
 	if (!tret) {
@@ -99,6 +110,9 @@ int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
 	return ret;
 
 error:
+	if (opts && opts->time_str)
+		free(opts->time_str);
+
 	if (opts)
 		free(opts);
 
@@ -139,10 +153,22 @@ void time_of_day_exit(struct cause * const cse)
 {
 	struct time_of_day_opts *opts = (struct time_of_day_opts *)cse->data;
 
+	if (opts->time_str)
+		free(opts->time_str);
+
 	free(opts);
 }
 
-void time_of_day_print(const struct cause * const cse)
+void time_of_day_print(const struct cause * const cse, FILE *file)
 {
-	printf("time of day\n");
+	struct time_of_day_opts *opts = (struct time_of_day_opts *)cse->data;
+
+	switch (opts->op) {
+		case OP_GREATER_THAN:
+			fprintf(file, "\tToD cause: current time is greater than %s\n", opts->time_str);
+			break;
+		default:
+			fprintf(file, "Invalid ToD op\n");
+			break;
+	}
 }

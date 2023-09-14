@@ -28,14 +28,6 @@ struct days {
 	unsigned int sat : 1;
 };
 
-#define SUNDAY 0
-#define MONDAY 1
-#define TUESDAY 2
-#define WEDNESDAY 3
-#define THURSDAY 4
-#define FRIDAY 5
-#define SATURDAY 6
-
 struct days_of_the_week_opts {
 	struct days d;
 };
@@ -193,7 +185,16 @@ void days_of_the_week_exit(struct cause * const cse)
 	free(opts);
 }
 
-void days_of_the_week_print(const struct cause * const cse)
+void days_of_the_week_print(const struct cause * const cse, FILE *file)
 {
-	printf("days_of_the_week\n");
+	const char * const days[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
+		"Friday", "Saturday"};
+	struct tm *cur_tm;
+	time_t cur_time;
+
+	time(&cur_time);
+	cur_tm = localtime(&cur_time);
+
+	fprintf(file, "\tDotW cause: current day, %s, matches the filter\n",
+		days[cur_tm->tm_wday]);
 }
