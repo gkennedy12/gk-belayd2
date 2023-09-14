@@ -106,13 +106,88 @@ error:
 	return ret;
 }
 
+static int parse_effect(struct rule * const rule, struct json_object * const effect_obj)
+{
+	struct json_object *name_obj;
+	bool found_effect = false;
+	struct effect *eff = NULL;
+	json_bool exists;
+	const char *name;
+	int ret = 0;
+	int i;
+
+	exists = json_object_object_get_ex(effect_obj, "name", &name_obj);
+	if (!exists || !name_obj) {
+		ret = -EINVAL;
+		goto error;
+	}
+
+	name = json_object_get_string(name_obj);
+	if (!name) {
+		ret = -EINVAL;
+		goto error;
+	}
+
+	eff = malloc(sizeof(struct effect));
+	if (!eff) {
+		ret = -ENOMEM;
+		goto error;
+	}
+
+	memset(eff, 0, sizeof(struct effect));
+
+	eff->name = malloc(strlen(name) + 1);
+	if (!eff->name) {
+		ret = -ENOMEM;
+		goto error;
+	}
+
+	strcpy(eff->name, name);
+
+	for (i = 0; i < EFFECT_CNT; i++) {
+		if (strncmp(name, effect_names[i], strlen(effect_names[i])) == 0) {
+			found_effect = true;
+			eff->idx = i;
+
+			ret = effect_inits[i](eff, effect_obj, rule->causes);
+			if (ret)
+				goto error;
+
+			break;
+		}
+	}
+
+	if (!found_effect)
+		goto error;
+
+	/*
+	 * do not goto error after this point.  we have added the eff
+	 * to the effects linked list
+	 */
+	if (!rule->effects)
+		rule->effects = eff;
+	else
+		rule->effects->next = eff;
+
+	return ret;
+
+error:
+	if (eff && eff->name)
+		free(eff->name);
+
+	if (eff)
+		free(eff);
+
+	return ret;
+}
+
 static int parse_rule(struct belayd_opts * const opts, struct json_object * const rule_obj)
 {
-	struct json_object *name_obj, *causes_obj, *cause_obj;
+	struct json_object *name_obj, *causes_obj, *cause_obj, *effects_obj, *effect_obj;
+	int i, cause_cnt, effect_cnt;
 	struct rule *rule = NULL;
 	json_bool exists;
 	const char *name;
-	int i, cause_cnt;
 	int ret = 0;
 
 	exists = json_object_object_get_ex(rule_obj, "name", &name_obj);
@@ -142,6 +217,9 @@ static int parse_rule(struct belayd_opts * const opts, struct json_object * cons
 	}
 	strcpy(rule->name, name);
 
+	/*
+	 * Parse the causes
+	 */
 	exists = json_object_object_get_ex(rule_obj, "causes", &causes_obj);
 	if (!exists || !causes_obj) {
 		ret = -EINVAL;
@@ -158,6 +236,29 @@ static int parse_rule(struct belayd_opts * const opts, struct json_object * cons
 		}
 
 		ret = parse_cause(rule, cause_obj);
+		if (ret)
+			goto error;
+	}
+
+	/*
+	 * Parse the effects
+	 */
+	exists = json_object_object_get_ex(rule_obj, "effects", &effects_obj);
+	if (!exists || !effects_obj) {
+		ret = -EINVAL;
+		goto error;
+	}
+
+	effect_cnt = json_object_array_length(effects_obj);
+
+	for (i = 0; i < effect_cnt; i++) {
+		effect_obj = json_object_array_get_idx(effects_obj, i);
+		if (!effect_obj) {
+			ret = -EINVAL;
+			goto error;
+		}
+
+		ret = parse_effect(rule, effect_obj);
 		if (ret)
 			goto error;
 	}

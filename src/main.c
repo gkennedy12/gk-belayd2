@@ -83,14 +83,15 @@ err:
 void cleanup(struct belayd_opts *opts)
 {
 	struct rule *rule, *rule_next;
+	struct effect *eff, *eff_next;
 	struct cause *cse, *cse_next;
 
 	rule = opts->rules;
 
 	while (rule) {
 		rule_next = rule->next;
-		cse = rule->causes;
 
+		cse = rule->causes;
 		while (cse) {
 			cse_next = cse->next;
 			cause_exits[cse->idx](cse);
@@ -99,6 +100,17 @@ void cleanup(struct belayd_opts *opts)
 
 			free(cse);
 			cse = cse_next;
+		}
+
+		eff = rule->effects;
+		while (eff) {
+			eff_next = eff->next;
+			effect_exits[eff->idx](eff);
+			if (eff->name)
+				free(eff->name);
+
+			free(eff);
+			eff = eff_next;
 		}
 
 		if (rule->name)
@@ -112,6 +124,7 @@ void cleanup(struct belayd_opts *opts)
 int main(int argc, char *argv[])
 {
 	struct belayd_opts opts;
+	struct effect *eff;
 	struct cause *cse;
 	struct rule *rule;
 	int ret;
@@ -134,24 +147,39 @@ int main(int argc, char *argv[])
 				ret = cause_mains[cse->idx](cse, opts.interval);
 				if (ret < 0)
 					goto out;
-				else if (ret > 0)
-					/* this cause tripped */
-					printf("tripped\n");
 				else if (ret == 0)
 					/*
 					 * this cause did not trip.  skip all the remaining causes
 					 * in this rule
 					 */
 					break;
+				else if (ret > 0)
+					/*
+					 * This cause tripped.  We don't need to do anything.
+					 * If all of the causes in this rule are triggered,
+					 * then the "ret > 0" will flow down to the logic
+					 * below and the effects will be run.
+					 */
+					;
 				cse = cse->next;
 			}
 
-			if (ret > 0)
+			if (ret > 0) {
 				/*
 				 * The cause(s) for this rule were triggered, invoke the
 				 * effect(s)
 				 */
-				;
+				eff = rule->effects;
+
+				while (eff) {
+					ret = effect_mains[eff->idx](eff);
+					if (ret)
+						goto out;
+
+					eff = eff->next;
+				}
+			}
+
 
 			rule = rule->next;
 		}

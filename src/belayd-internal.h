@@ -6,16 +6,18 @@
  * Author: Tom Hromatka <tom.hromatka@oracle.com>
  */
 
+#ifndef __BELAYD_INTERNAL_H
+#define __BELAYD_INTERNAL_H
+
 #include <stdio.h>
 
 #include "cause.h"
+#include "effect.h"
 
 struct rule {
 	char *name;
 	struct cause *causes;
-
-	//struct effect *effects;
-	//int effect_cnt;
+	struct effect *effects;
 
 	struct rule *next;
 };
@@ -34,3 +36,5 @@ struct belayd_opts {
  */
 
 int parse_config(struct belayd_opts * const opts);
+
+#endif /* __BELAYD_INTERNAL_H */

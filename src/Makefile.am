@@ -1,6 +1,8 @@
 SOURCES = \
 	causes/time_of_day.c \
 	cause.c \
+	effects/print.c \
+	effect.c \
 	main.c \
 	parse.c
 

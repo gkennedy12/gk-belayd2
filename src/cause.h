@@ -10,12 +10,16 @@
  * Author: Tom Hromatka <tom.hromatka@oracle.com>
  */
 
+#ifndef __BELAYD_CAUSE_H
+#define __BELAYD_CAUSE_H
+
 #include <json-c/json.h>
 
 #include "defines.h"
 
 enum cause_enum {
 	TIME_OF_DAY = 0,
+
 	CAUSE_CNT
 };
 
@@ -44,3 +48,5 @@ extern const cause_exit cause_exits[];
 int time_of_day_init(struct cause * const cse, struct json_object *cse_obj);
 int time_of_day_main(struct cause * const cse, int time_since_last_run);
 void time_of_day_exit(struct cause * const cse);
+
+#endif /* __BELAYD_CAUSE_H */
