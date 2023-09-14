@@ -53,6 +53,8 @@ dnl # makefiles
 dnl #
 AC_CONFIG_FILES([
 	Makefile
+	doc/Makefile
+	doc/examples/Makefile
 	include/Makefile
 	src/Makefile
 	tests/Makefile
