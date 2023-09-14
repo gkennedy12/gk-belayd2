@@ -13,6 +13,8 @@
 #include <errno.h>
 
 #include "belayd-internal.h"
+#include "effect.h"
+#include "cause.h"
 
 static int get_file_size(FILE * const fd, long * const file_size)
 {
@@ -149,8 +151,9 @@ static int parse_effect(struct rule * const rule, struct json_object * const eff
 		if (strncmp(name, effect_names[i], strlen(effect_names[i])) == 0) {
 			found_effect = true;
 			eff->idx = i;
+			eff->fns = &effect_fns[i];
 
-			ret = effect_inits[i](eff, effect_obj, rule->causes);
+			ret = (*eff->fns->init)(eff, effect_obj, rule->causes);
 			if (ret)
 				goto error;
 

@@ -105,7 +105,7 @@ void cleanup(struct belayd_opts *opts)
 		eff = rule->effects;
 		while (eff) {
 			eff_next = eff->next;
-			effect_exits[eff->idx](eff);
+			(*eff->fns->exit)(eff);
 			if (eff->name)
 				free(eff->name);
 
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 				eff = rule->effects;
 
 				while (eff) {
-					ret = effect_mains[eff->idx](eff);
+					ret = (*eff->fns->main)(eff);
 					if (ret)
 						goto out;
 

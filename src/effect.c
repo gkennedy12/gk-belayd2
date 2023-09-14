@@ -21,20 +21,8 @@ const char * const effect_names[] = {
 static_assert(ARRAY_SIZE(effect_names) == EFFECT_CNT,
 	      "effect_names[] must be same length as EFFECT_CNT");
 
-const effect_init effect_inits[] = {
-	print_init,
+const struct effect_functions effect_fns[] = {
+	{print_init, print_main, print_exit},
 };
-static_assert(ARRAY_SIZE(effect_inits) == EFFECT_CNT,
-	      "effect_inits[] must be same length as EFFECT_CNT");
-
-const effect_main effect_mains[] = {
-	print_main,
-};
-static_assert(ARRAY_SIZE(effect_mains) == EFFECT_CNT,
-	      "effect_mains[] must be same length as EFFECT_CNT");
-
-const effect_exit effect_exits[] = {
-	print_exit,
-};
-static_assert(ARRAY_SIZE(effect_exits) == EFFECT_CNT,
-	      "effect_exits[] must be same length as EFFECT_CNT");
+static_assert(ARRAY_SIZE(effect_fns) == EFFECT_CNT,
+	      "effect_fns[] must be same length as EFFECT_CNT");

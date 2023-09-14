@@ -28,6 +28,7 @@ struct effect {
 	/* populated by belayd */
 	enum effect_enum idx;
 	char *name;
+	const struct effect_functions *fns;
 	struct effect *next;
 
 	/* private data store for each effect plugin */
@@ -39,14 +40,16 @@ typedef int (*effect_init)(struct effect * const eff, struct json_object *eff_ob
 typedef int (*effect_main)(struct effect * const eff);
 typedef void (*effect_exit)(struct effect * const eff);
 
-extern const char * const effect_names[];
-extern const effect_init effect_inits[];
-extern const effect_main effect_mains[];
-extern const effect_exit effect_exits[];
+struct effect_functions {
+	effect_init init;
+	effect_main main;
+	effect_exit exit;
+};
 
-/*
- * print.c
- */
+extern const char * const effect_names[];
+extern const struct effect_functions effect_fns[];
+
+
 int print_init(struct effect * const eff, struct json_object *eff_obj,
 	       const struct cause * const cse);
 int print_main(struct effect * const eff);
