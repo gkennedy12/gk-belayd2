@@ -19,12 +19,13 @@
 enum file_enum {
 	FILE_STDOUT = 0,
 	FILE_STDERR,
-	
+
 	FILE_CNT
 };
 
 struct print_opts {
 	FILE *file;
+	const struct cause *cse;
 };
 
 int print_init(struct effect * const eff, struct json_object *eff_obj,
@@ -68,7 +69,9 @@ int print_init(struct effect * const eff, struct json_object *eff_obj,
 		ret = -EINVAL;
 		goto error;
 	}
-	
+
+	opts->cse = cse;
+
 	/* we have successfully setup the print effect */
 	eff->data = (void *)opts;
 
@@ -84,14 +87,22 @@ error:
 int print_main(struct effect * const eff)
 {
 	struct print_opts *opts = (struct print_opts *)eff->data;
+	const struct cause *cse;
 
-	fprintf(opts->file, "Print effect triggered\n");
+	fprintf(opts->file, "Print effect triggered by:\n");
+
+	cse = opts->cse;
+	while (cse) {
+		fprintf(opts->file, "\t%s\n", cse->name);
+		cse = cse->next;
+	}
+
 	return 0;
 }
 
 void print_exit(struct effect * const eff)
 {
 	struct print_opts *opts = (struct print_opts *)eff->data;
-	
+
 	free(opts);
 }

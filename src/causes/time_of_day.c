@@ -154,6 +154,6 @@ int time_of_day_main(struct cause * const cse, int time_since_last_run)
 void time_of_day_exit(struct cause * const cse)
 {
 	struct time_of_day_opts *opts = (struct time_of_day_opts *)cse->data;
-	
+
 	free(opts);
 }
