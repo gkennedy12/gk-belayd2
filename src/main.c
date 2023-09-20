@@ -5,16 +5,30 @@
  * Copyright (c) 2023 Oracle and/or its affiliates.
  * Author: Tom Hromatka <tom.hromatka@oracle.com>
  */
+#include <stdbool.h>
 #include <stdlib.h>
 #include <getopt.h>
 #include <string.h>
 #include <unistd.h>
+#include <syslog.h>
+#include <assert.h>
 #include <stdio.h>
 
 #include "belayd-internal.h"
+#include "defines.h"
+
+static const char * const log_files[] = {
+	"syslog",
+	"stdout",
+	"stderr",
+};
+static_assert(ARRAY_SIZE(log_files) == LOG_LOC_CNT,
+	      "log_files[] must be the same length as LOG_LOC_CNT");
 
 static const char * const default_config_file = "/etc/belayd.json";
 static const int default_interval = 5; /* seconds */
+static const int default_log_level = LOG_ERR;
+static const enum log_location default_log_location = LOG_LOC_STDERR;
 
 static void usage(FILE *fd)
 {
@@ -26,6 +40,10 @@ static void usage(FILE *fd)
 	fprintf(fd, "  -h --help                 Show this help message\n");
 	fprintf(fd, "  -i --interval=INTERVAL    Polling interval in seconds (default: %d)\n",
 		default_interval);
+	fprintf(fd, "  -L --loglocation=LOCATION Location to write belayd logs (default: %s)\n",
+		log_files[default_log_location]);
+	fprintf(fd, "  -l --loglevel=LEVEL       Log level.  See <syslog.h>.  (default: %d)\n",
+		default_log_level);
 }
 
 int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
@@ -34,15 +52,20 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 		{"help",		no_argument, NULL, 'h'},
 		{"config",	  required_argument, NULL, 'c'},
 		{"interval",	  required_argument, NULL, 'i'},
+		{"loglocation",	  required_argument, NULL, 'L'},
+		{"loglevel",	  required_argument, NULL, 'l'},
 		{NULL, 0, NULL, 0}
 	};
 	const char *short_options = "c:hi:";
 
-	int ret = 0;
+	int ret = 0, i;
+	bool found;
 
 	memset(opts, 0, sizeof(struct belayd_opts));
 	strncpy(opts->config, default_config_file, FILENAME_MAX - 1);
 	opts->interval = default_interval;
+	opts->log_level = default_log_level;
+	opts->log_loc = default_log_location;
 
 	while (1) {
 		int c;
@@ -62,6 +85,35 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 		case 'i':
 			opts->interval = atoi(optarg);
 			if (opts->interval < 1) {
+				ret = 1;
+				goto err;
+			}
+			break;
+		case 'l':
+			opts->log_level = atoi(optarg);
+			if (opts->log_level < 1) {
+				opts->log_level = default_log_level;
+				opts->log_loc = default_log_location;
+				belayd_err(opts, "Invalid log level: %s.  See <syslog.h>\n", optarg);
+				ret = 1;
+				goto err;
+			}
+			break;
+		case 'L':
+			found = false;
+			for (i = 0; i < LOG_LOC_CNT; i++) {
+				if (strncmp(log_files[i], optarg,
+					    strlen(log_files[i])) == 0) {
+					found = true;
+					opts->log_loc = i;
+					break;
+				}
+			}
+
+			if (!found) {
+				opts->log_level = default_log_level;
+				opts->log_loc = default_log_location;
+				belayd_err(opts, "Invalid log location: %s\n", optarg);
 				ret = 1;
 				goto err;
 			}

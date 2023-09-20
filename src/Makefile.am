@@ -4,6 +4,7 @@ SOURCES = \
 	cause.c \
 	effects/print.c \
 	effect.c \
+	log.c \
 	main.c \
 	parse.c
 

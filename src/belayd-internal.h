@@ -14,6 +14,14 @@
 #include "cause.h"
 #include "effect.h"
 
+enum log_location {
+	LOG_LOC_SYSLOG = 0,
+	LOG_LOC_STDOUT,
+	LOG_LOC_STDERR,
+
+	LOG_LOC_CNT
+};
+
 struct rule {
 	char *name;
 	struct cause *causes;
@@ -26,10 +34,30 @@ struct belayd_opts {
 	/* options passed in on the command line */
 	char config[FILENAME_MAX];
 	int interval;
+	int log_level; /* see <syslog.h> for levels */
+	enum log_location log_loc;
 
 	/* internal settings and structures */
 	struct rule *rules;
 };
+
+/*
+ * log.c functions
+ */
+
+void belayd_log(enum log_location loc, int priority, const char *fmt, ...);
+
+#define belayd_err(opts, msg...) \
+	if (opts->log_level >= LOG_ERR) \
+		belayd_log(opts->log_loc, LOG_ERR, "Error: " msg)
+
+#define belayd_wrn(opts, msg...) \
+	if (opts->log_level >= LOG_WARNING) \
+		belayd_log(opts->log_log, LOG_WARNING, "Warning: " msg)
+
+#define belayd_dbg(opts, msg...) \
+	if (opts->log_level >= LOG_DEBUG) \
+		belayd_log(opts->log_level, LOG_DEBUG, "Debug: " msg)
 
 /*
  * parse.c functions
