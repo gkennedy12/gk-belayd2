@@ -131,17 +131,27 @@ int time_of_day_main(struct cause * const cse, int time_since_last_run)
 
 	switch (opts->op) {
 		case OP_GREATER_THAN:
-			if (cur_tm->tm_hour > opts->time.tm_hour)
+			if (cur_tm->tm_hour > opts->time.tm_hour) {
+				belayd_info("Cur hour %d > trigger hour %d\n",
+					    cur_tm->tm_hour, opts->time.tm_hour);
 				return 1;
+			}
 			if (cur_tm->tm_hour == opts->time.tm_hour &&
-			    cur_tm->tm_min > opts->time.tm_min)
+			    cur_tm->tm_min > opts->time.tm_min) {
+				belayd_info("Hours match.  Cur min %d > trigger min %d\n",
+					    cur_tm->tm_min, opts->time.tm_min);
 				return 1;
+			}
 			if (cur_tm->tm_hour == opts->time.tm_hour &&
 			    cur_tm->tm_min == opts->time.tm_min &&
-			    cur_tm->tm_sec > opts->time.tm_sec)
+			    cur_tm->tm_sec > opts->time.tm_sec) {
+				belayd_info("Hrs and mins match.  Cur sec %d > trigger sec %d\n",
+					    cur_tm->tm_sec, opts->time.tm_sec);
 				return 1;
+			}
 			break;
 		default:
+			belayd_err("Invalid ToD operation: %d\n", opts->op);
 			ret = -EINVAL;
 			break;
 	}

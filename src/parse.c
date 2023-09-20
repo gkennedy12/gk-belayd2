@@ -21,14 +21,18 @@ static int get_file_size(FILE * const fd, long * const file_size)
 	int ret;
 
 	ret = fseek(fd, 0, SEEK_END);
-	if (ret)
+	if (ret) {
+		belayd_err("fseek SEEK_END failed: %d\n", ret);
 		return -errno;
+	}
 
 	*file_size = ftell(fd);
 
 	ret = fseek(fd, 0, SEEK_SET);
-	if (ret)
+	if (ret) {
+		belayd_err("fseek SEEK_SET failed: %d\n", ret);
 		return -errno;
+	}
 
 	return ret;
 }
@@ -41,12 +45,14 @@ int parse_string(struct json_object * const obj, const char * const key, const c
 
 	exists = json_object_object_get_ex(obj, key, &key_obj);
 	if (!exists || !key_obj) {
+		belayd_err("Failed to find key %s\n", key);
 		ret = -EINVAL;
 		goto error;
 	}
 
 	*value = json_object_get_string(key_obj);
 	if (!(*value)) {
+		belayd_err("Failed to get value for key %s\n", key);
 		ret = -EINVAL;
 		goto error;
 	}
@@ -91,6 +97,7 @@ static int parse_cause(struct rule * const rule, struct json_object * const caus
 			cse->idx = i;
 			cse->fns = &cause_fns[i];
 
+			belayd_dbg("Initializing cause %s\n", cse->name);
 			ret = (*cse->fns->init)(cse, cause_obj);
 			if (ret)
 				goto error;
@@ -157,6 +164,7 @@ static int parse_effect(struct rule * const rule, struct json_object * const eff
 			eff->idx = i;
 			eff->fns = &effect_fns[i];
 
+			belayd_dbg("Initializing effect %s\n", eff->name);
 			ret = (*eff->fns->init)(eff, effect_obj, rule->causes);
 			if (ret)
 				goto error;
@@ -222,6 +230,7 @@ static int parse_rule(struct belayd_opts * const opts, struct json_object * cons
 	 */
 	exists = json_object_object_get_ex(rule_obj, "causes", &causes_obj);
 	if (!exists || !causes_obj) {
+		belayd_err("Failed to find \"causes\" object\n");
 		ret = -EINVAL;
 		goto error;
 	}
@@ -231,6 +240,7 @@ static int parse_rule(struct belayd_opts * const opts, struct json_object * cons
 	for (i = 0; i < cause_cnt; i++) {
 		cause_obj = json_object_array_get_idx(causes_obj, i);
 		if (!cause_obj) {
+			belayd_err("Failed to get cause object #%d\n", i);
 			ret = -EINVAL;
 			goto error;
 		}
@@ -245,6 +255,7 @@ static int parse_rule(struct belayd_opts * const opts, struct json_object * cons
 	 */
 	exists = json_object_object_get_ex(rule_obj, "effects", &effects_obj);
 	if (!exists || !effects_obj) {
+		belayd_err("Failed to find \"effects\" object\n");
 		ret = -EINVAL;
 		goto error;
 	}
@@ -254,6 +265,7 @@ static int parse_rule(struct belayd_opts * const opts, struct json_object * cons
 	for (i = 0; i < effect_cnt; i++) {
 		effect_obj = json_object_array_get_idx(effects_obj, i);
 		if (!effect_obj) {
+			belayd_err("Failed to get effect object #%d\n", i);
 			ret = -EINVAL;
 			goto error;
 		}
@@ -300,6 +312,7 @@ static int parse_json(struct belayd_opts * const opts, const char * const buf)
 
 	exists = json_object_object_get_ex(obj, "rules", &rules_obj);
 	if (!exists || !rules_obj) {
+		belayd_err("Failed to get \"rules\" object\n");
 		ret = -EINVAL;
 		goto out;
 	}
@@ -309,6 +322,7 @@ static int parse_json(struct belayd_opts * const opts, const char * const buf)
 	for (i = 0; i < rule_cnt; i++) {
 		rule_obj = json_object_array_get_idx(rules_obj, i);
 		if (!rule_obj) {
+			belayd_err("Failed to get rule object #%d\n", i);
 			ret = -EINVAL;
 			goto out;
 		}
@@ -332,6 +346,7 @@ int parse_config(struct belayd_opts * const opts)
 
 	config_fd = fopen(opts->config, "r");
 	if (!config_fd) {
+		belayd_err("Failed to fopen %s\n", opts->config);
 		ret = -errno;
 		goto out;
 	}
@@ -348,6 +363,8 @@ int parse_config(struct belayd_opts * const opts)
 
 	chars_read = fread(buf, sizeof(char), config_size, config_fd);
 	if (chars_read != config_size) {
+		belayd_err("Expected to read %d bytes but read %d bytes\n",
+			   config_size, chars_read);
 		ret = -EIO;
 		goto out;
 	}

@@ -144,34 +144,49 @@ int days_of_the_week_main(struct cause * const cse, int time_since_last_run)
 
 	switch (cur_tm->tm_wday) {
 		case 0: /* Sunday */
-			if (opts->d.sun)
+			if (opts->d.sun) {
+				belayd_info("Sunday trigger\n");
 				return 1;
+			}
 			break;
 		case 1: /* Monday */
-			if (opts->d.mon)
+			if (opts->d.mon) {
+				belayd_info("Monday trigger\n");
 				return 1;
+			}
 			break;
 		case 2: /* Tuesday */
-			if (opts->d.tues)
+			if (opts->d.tues) {
+				belayd_info("Tuesday trigger\n");
 				return 1;
+			}
 			break;
 		case 3:
-			if (opts->d.wed)
+			if (opts->d.wed) {
+				belayd_info("Wednesday trigger\n");
 				return 1;
+			}
 			break;
 		case 4:
-			if (opts->d.thurs)
+			if (opts->d.thurs) {
+				belayd_info("Thursday trigger\n");
 				return 1;
+			}
 			break;
 		case 5:
-			if (opts->d.fri)
+			if (opts->d.fri) {
+				belayd_info("Friday trigger\n");
 				return 1;
+			}
 			break;
 		case 6:
-			if (opts->d.sat)
+			if (opts->d.sat) {
+				belayd_info("Saturday trigger\n");
 				return 1;
+			}
 			break;
 		default:
+			belayd_err("Unexpected day: %d\n", cur_tm->tm_wday);
 			return -1;
 	}
 

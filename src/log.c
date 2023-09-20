@@ -13,12 +13,15 @@
 
 #include "belayd-internal.h"
 
-void belayd_log(enum log_location loc, int priority, const char *fmt, ...)
+int log_level = LOG_ERR;
+enum log_location log_loc = LOG_LOC_STDERR;
+
+void belayd_log(int priority, const char *fmt, ...)
 {
 	va_list ap;
 	va_start(ap, fmt);
 
-	switch(loc) {
+	switch(log_loc) {
 		case LOG_LOC_SYSLOG:
 			vsyslog(priority, fmt, ap);
 			break;

@@ -9,6 +9,7 @@
 #ifndef __BELAYD_INTERNAL_H
 #define __BELAYD_INTERNAL_H
 
+#include <syslog.h>
 #include <stdio.h>
 
 #include "cause.h"
@@ -34,8 +35,6 @@ struct belayd_opts {
 	/* options passed in on the command line */
 	char config[FILENAME_MAX];
 	int interval;
-	int log_level; /* see <syslog.h> for levels */
-	enum log_location log_loc;
 
 	/* internal settings and structures */
 	struct rule *rules;
@@ -45,19 +44,26 @@ struct belayd_opts {
  * log.c functions
  */
 
-void belayd_log(enum log_location loc, int priority, const char *fmt, ...);
+extern int log_level;
+extern enum log_location log_loc;
 
-#define belayd_err(opts, msg...) \
-	if (opts->log_level >= LOG_ERR) \
-		belayd_log(opts->log_loc, LOG_ERR, "Error: " msg)
+void belayd_log(int priority, const char *fmt, ...);
 
-#define belayd_wrn(opts, msg...) \
-	if (opts->log_level >= LOG_WARNING) \
-		belayd_log(opts->log_log, LOG_WARNING, "Warning: " msg)
+#define belayd_err(msg...) \
+	if (log_level >= LOG_ERR) \
+		belayd_log(LOG_ERR, "Error: " msg)
 
-#define belayd_dbg(opts, msg...) \
-	if (opts->log_level >= LOG_DEBUG) \
-		belayd_log(opts->log_level, LOG_DEBUG, "Debug: " msg)
+#define belayd_wrn(msg...) \
+	if (log_level >= LOG_WARNING) \
+		belayd_log(LOG_WARNING, "Warning: " msg)
+
+#define belayd_info(msg...) \
+	if (log_level >= LOG_INFO) \
+		belayd_log(LOG_INFO, "Info: " msg)
+
+#define belayd_dbg(msg...) \
+	if (log_level >= LOG_DEBUG) \
+		belayd_log(LOG_DEBUG, "Debug: " msg)
 
 /*
  * parse.c functions

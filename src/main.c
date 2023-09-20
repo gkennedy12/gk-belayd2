@@ -27,8 +27,6 @@ static_assert(ARRAY_SIZE(log_files) == LOG_LOC_CNT,
 
 static const char * const default_config_file = "/etc/belayd.json";
 static const int default_interval = 5; /* seconds */
-static const int default_log_level = LOG_ERR;
-static const enum log_location default_log_location = LOG_LOC_STDERR;
 
 static void usage(FILE *fd)
 {
@@ -40,10 +38,8 @@ static void usage(FILE *fd)
 	fprintf(fd, "  -h --help                 Show this help message\n");
 	fprintf(fd, "  -i --interval=INTERVAL    Polling interval in seconds (default: %d)\n",
 		default_interval);
-	fprintf(fd, "  -L --loglocation=LOCATION Location to write belayd logs (default: %s)\n",
-		log_files[default_log_location]);
-	fprintf(fd, "  -l --loglevel=LEVEL       Log level.  See <syslog.h>.  (default: %d)\n",
-		default_log_level);
+	fprintf(fd, "  -L --loglocation=LOCATION Location to write belayd logs\n");
+	fprintf(fd, "  -l --loglevel=LEVEL       Log level. See <syslog.h>\n");
 }
 
 int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
@@ -64,8 +60,6 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 	memset(opts, 0, sizeof(struct belayd_opts));
 	strncpy(opts->config, default_config_file, FILENAME_MAX - 1);
 	opts->interval = default_interval;
-	opts->log_level = default_log_level;
-	opts->log_loc = default_log_location;
 
 	while (1) {
 		int c;
@@ -85,19 +79,22 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 		case 'i':
 			opts->interval = atoi(optarg);
 			if (opts->interval < 1) {
+				belayd_err("Invalid interval: %s\n", optarg);
 				ret = 1;
 				goto err;
 			}
 			break;
 		case 'l':
-			opts->log_level = atoi(optarg);
-			if (opts->log_level < 1) {
-				opts->log_level = default_log_level;
-				opts->log_loc = default_log_location;
-				belayd_err(opts, "Invalid log level: %s.  See <syslog.h>\n", optarg);
+			int tmp_level;
+
+			tmp_level = atoi(optarg);
+			if (tmp_level < 1) {
+				belayd_err("Invalid log level: %s.  See <syslog.h>\n", optarg);
 				ret = 1;
 				goto err;
 			}
+
+			log_level = tmp_level;
 			break;
 		case 'L':
 			found = false;
@@ -105,15 +102,13 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 				if (strncmp(log_files[i], optarg,
 					    strlen(log_files[i])) == 0) {
 					found = true;
-					opts->log_loc = i;
+					log_loc = i;
 					break;
 				}
 			}
 
 			if (!found) {
-				opts->log_level = default_log_level;
-				opts->log_loc = default_log_location;
-				belayd_err(opts, "Invalid log location: %s\n", optarg);
+				belayd_err("Invalid log location: %s\n", optarg);
 				ret = 1;
 				goto err;
 			}
@@ -141,11 +136,13 @@ void cleanup(struct belayd_opts *opts)
 	rule = opts->rules;
 
 	while (rule) {
+		belayd_dbg("Cleaning up rule %s\n", rule->name);
 		rule_next = rule->next;
 
 		cse = rule->causes;
 		while (cse) {
 			cse_next = cse->next;
+			belayd_dbg("Cleaning up cause %s\n", cse->name);
 			(*cse->fns->exit)(cse);
 			if (cse->name)
 				free(cse->name);
@@ -157,6 +154,7 @@ void cleanup(struct belayd_opts *opts)
 		eff = rule->effects;
 		while (eff) {
 			eff_next = eff->next;
+			belayd_dbg("Cleaning up effect %s\n", eff->name);
 			(*eff->fns->exit)(eff);
 			if (eff->name)
 				free(eff->name);
@@ -193,26 +191,31 @@ int main(int argc, char *argv[])
 		rule = opts.rules;
 
 		while (rule) {
+			belayd_dbg("Running rule %s\n", rule->name);
 			cse = rule->causes;
 
 			while (cse) {
 				ret = (*cse->fns->main)(cse, opts.interval);
-				if (ret < 0)
+				if (ret < 0) {
+					belayd_dbg("%s raised error %d\n", cse->name, ret);
 					goto out;
-				else if (ret == 0)
+				} else if (ret == 0) {
 					/*
 					 * this cause did not trip.  skip all the remaining causes
 					 * in this rule because the effect will not be invoked.
 					 */
+					belayd_dbg("%s did not trip\n", cse->name);
 					break;
-				else if (ret > 0)
+				} else if (ret > 0) {
 					/*
 					 * This cause tripped.  We don't need to do anything.
 					 * If all of the causes in this rule are triggered,
 					 * then the "ret > 0" will flow down to the logic
 					 * below and the effects will be run.
 					 */
-					;
+					belayd_dbg("%s tripped\n", cse->name);
+				}
+
 				cse = cse->next;
 			}
 
@@ -224,6 +227,7 @@ int main(int argc, char *argv[])
 				eff = rule->effects;
 
 				while (eff) {
+					belayd_dbg("Running effect %s\n", eff->name);
 					ret = (*eff->fns->main)(eff);
 					if (ret)
 						goto out;
