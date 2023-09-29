@@ -3,6 +3,7 @@ SOURCES = \
 	causes/time_of_day.c \
 	cause.c \
 	effects/print.c \
+	effects/validate.c \
 	effect.c \
 	log.c \
 	main.c \
