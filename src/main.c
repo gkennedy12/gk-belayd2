@@ -56,7 +56,7 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 		{"maxloops",	  required_argument, NULL, 'm'},
 		{NULL, 0, NULL, 0}
 	};
-	const char *short_options = "c:hi:";
+	const char *short_options = "c:hi:L:l:m:";
 
 	int ret = 0, i;
 	bool found;
