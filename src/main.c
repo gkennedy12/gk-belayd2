@@ -13,6 +13,7 @@
 #include <syslog.h>
 #include <assert.h>
 #include <stdio.h>
+#include <errno.h>
 
 #include "belayd-internal.h"
 #include "defines.h"
@@ -40,6 +41,8 @@ static void usage(FILE *fd)
 		default_interval);
 	fprintf(fd, "  -L --loglocation=LOCATION Location to write belayd logs\n");
 	fprintf(fd, "  -l --loglevel=LEVEL       Log level. See <syslog.h>\n");
+	fprintf(fd, "  -m --maxloops=COUNT       Maximum number of loops to run."
+						 "Useful for testing\n");
 }
 
 int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
@@ -50,6 +53,7 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 		{"interval",	  required_argument, NULL, 'i'},
 		{"loglocation",	  required_argument, NULL, 'L'},
 		{"loglevel",	  required_argument, NULL, 'l'},
+		{"maxloops",	  required_argument, NULL, 'm'},
 		{NULL, 0, NULL, 0}
 	};
 	const char *short_options = "c:hi:";
@@ -60,6 +64,7 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 	memset(opts, 0, sizeof(struct belayd_opts));
 	strncpy(opts->config, default_config_file, FILENAME_MAX - 1);
 	opts->interval = default_interval;
+	opts->max_loops = 0;
 
 	while (1) {
 		int c;
@@ -109,6 +114,14 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 
 			if (!found) {
 				belayd_err("Invalid log location: %s\n", optarg);
+				ret = 1;
+				goto err;
+			}
+			break;
+		case 'm':
+			opts->max_loops = atoi(optarg);
+			if (opts->max_loops < 1) {
+				belayd_err("Invalid maxloops: %s\n", optarg);
 				ret = 1;
 				goto err;
 			}
@@ -174,6 +187,7 @@ void cleanup(struct belayd_opts *opts)
 int main(int argc, char *argv[])
 {
 	struct belayd_opts opts;
+	unsigned int loop_cnt;
 	struct effect *eff;
 	struct cause *cse;
 	struct rule *rule;
@@ -186,6 +200,8 @@ int main(int argc, char *argv[])
 	ret = parse_config(&opts);
 	if (ret)
 		goto out;
+
+	loop_cnt = 0;
 
 	while (1) {
 		rule = opts.rules;
@@ -238,6 +254,12 @@ int main(int argc, char *argv[])
 
 
 			rule = rule->next;
+		}
+
+		loop_cnt++;
+		if (opts.max_loops > 0 && loop_cnt > opts.max_loops) {
+			ret = -ETIME;
+			break;
 		}
 
 		sleep(opts.interval);

@@ -35,6 +35,7 @@ struct belayd_opts {
 	/* options passed in on the command line */
 	char config[FILENAME_MAX];
 	int interval;
+	int max_loops;
 
 	/* internal settings and structures */
 	struct rule *rules;
