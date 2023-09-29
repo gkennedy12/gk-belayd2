@@ -70,6 +70,7 @@ void belayd_log(int priority, const char *fmt, ...);
  */
 
 int parse_string(struct json_object * const obj, const char * const key, const char **value);
+int parse_int(struct json_object * const obj, const char * const key, int * const value);
 int parse_config(struct belayd_opts * const opts);
 
 #endif /* __BELAYD_INTERNAL_H */

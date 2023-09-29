@@ -43,6 +43,11 @@ int parse_string(struct json_object * const obj, const char * const key, const c
 	json_bool exists;
 	int ret = 0;
 
+	if (!value && !(*value)) {
+		ret = -EINVAL;
+		goto error;
+	}
+
 	exists = json_object_object_get_ex(obj, key, &key_obj);
 	if (!exists || !key_obj) {
 		belayd_err("Failed to find key %s\n", key);
@@ -63,6 +68,29 @@ error:
 	return ret;
 }
 
+int parse_int(struct json_object * const obj, const char * const key, int * const value)
+{
+	const char *str_value;
+	int ret = 0;
+
+	if (!value && !(*value)) {
+		ret = -EINVAL;
+		goto error;
+	}
+
+	ret = parse_string(obj, key, &str_value);
+	if (ret)
+		goto error;
+
+	*value = atoi(str_value);
+	if ((*value) == 0) {
+		ret = -EINVAL;
+		goto error;
+	}
+
+error:
+	return ret;
+}
 static int parse_cause(struct rule * const rule, struct json_object * const cause_obj)
 {
 	bool found_cause = false;
