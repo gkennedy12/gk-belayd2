@@ -120,6 +120,9 @@ static int parse_cause(struct rule * const rule, struct json_object * const caus
 	strcpy(cse->name, name);
 
 	for (i = 0; i < CAUSE_CNT; i++) {
+		if (strlen(cause_names[i]) != strlen(name))
+			continue;
+
 		if (strncmp(name, cause_names[i], strlen(cause_names[i])) == 0) {
 			found_cause = true;
 			cse->idx = i;
@@ -134,8 +137,11 @@ static int parse_cause(struct rule * const rule, struct json_object * const caus
 		}
 	}
 
-	if (!found_cause)
+	if (!found_cause) {
+		belayd_err("Invalid cause provided: %s\n", name);
+		ret = -EINVAL;
 		goto error;
+	}
 
 	/*
 	 * do not goto error after this point.  we have added the cse
@@ -187,6 +193,9 @@ static int parse_effect(struct rule * const rule, struct json_object * const eff
 	strcpy(eff->name, name);
 
 	for (i = 0; i < EFFECT_CNT; i++) {
+		if (strlen(effect_names[i]) != strlen(name))
+			continue;
+
 		if (strncmp(name, effect_names[i], strlen(effect_names[i])) == 0) {
 			found_effect = true;
 			eff->idx = i;
@@ -201,8 +210,11 @@ static int parse_effect(struct rule * const rule, struct json_object * const eff
 		}
 	}
 
-	if (!found_effect)
+	if (!found_effect) {
+		belayd_err("Invalid effect provided: %s\n", name);
+		ret = -EINVAL;
 		goto error;
+	}
 
 	/*
 	 * do not goto error after this point.  we have added the eff
