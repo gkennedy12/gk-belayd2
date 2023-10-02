@@ -59,6 +59,7 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 	const char *short_options = "c:hi:L:l:m:";
 
 	int ret = 0, i;
+	int tmp_level;
 	bool found;
 
 	memset(opts, 0, sizeof(struct belayd_opts));
@@ -90,8 +91,6 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 			}
 			break;
 		case 'l':
-			int tmp_level;
-
 			tmp_level = atoi(optarg);
 			if (tmp_level < 1) {
 				belayd_err("Invalid log level: %s.  See <syslog.h>\n", optarg);
