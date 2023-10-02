@@ -268,5 +268,5 @@ int main(int argc, char *argv[])
 out:
 	cleanup(&opts);
 
-	return ret;
+	return -ret;
 }
