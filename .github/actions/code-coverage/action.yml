@@ -1,0 +1,17 @@
+# SPDX-License-Identifier: LGPL-2.1-only
+#
+# Action to collate the belayd code coverage data
+#
+# Copyright (c) 2021-2023 Oracle and/or its affiliates.
+# Author: Tom Hromatka <tom.hromatka@oracle.com>
+#
+
+name: Collate code coverage results
+description: "Collate code coverage results"
+runs:
+  using: "composite"
+  steps:
+  - run: lcov -d . -c -o lcov.tests
+    shell: bash
+  - run: lcov -a lcov.base -a lcov.tests -o lcov.total
+    shell: bash

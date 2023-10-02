@@ -1,0 +1,137 @@
+#### LICENSE TBD
+#
+# Continuous Integration Workflow for belayd
+#
+# Note: based on libcgroup's continuous-integration.yml
+#
+# Copyright (c) 2020-2023 Oracle and/or its affiliates.
+# Author: Tom Hromatka <tom.hromatka@oracle.com>
+#
+
+name: Continuous Integration
+on: ["push", "pull_request"]
+
+jobs:
+  # Doc: https://github.com/redhat-plumbers-in-action/differential-shellcheck#usage
+  differential-shellcheck:
+    name: Differential ShellCheck
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: Differential ShellCheck
+        uses: redhat-plumbers-in-action/differential-shellcheck@v4
+        with:
+          severity: warning
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  flake8-lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source repository
+        uses: actions/checkout@v3
+      - name: Set up Python environment
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+      - name: flake8 Lint
+        uses: reviewdog/action-flake8@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+  checkpatch:
+    name: Checkpatch Review
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    permissions:
+      contents: read
+      pull-requests: read
+
+    steps:
+      - name: 'Calculate PR commits + 1'
+        run: echo "PR_FETCH_DEPTH=$(( ${{ github.event.pull_request.commits }} + 1 ))" >> $GITHUB_ENV
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: ${{ env.PR_FETCH_DEPTH }}
+      - name: Run checkpatch review
+        uses: webispy/checkpatch-action@v9
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+
+  distcheck:
+    name: Belayd make distcheck
+    runs-on: ubuntu-20.04
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: false
+    - name: Initialize the directory
+      uses: ./.github/actions/setup-belayd
+    - name: Run make distcheck
+      run: make distcheck
+    - name: Display test logs
+      if: ${{ failure() }}
+      run: |
+        cat belayd-*/_build/sub/tests/ftests-wrapper.sh.log
+
+  functional_tests:
+    name: Belayd Functional Tests
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: false
+    - name: Initialize the directory
+      uses: ./.github/actions/setup-belayd
+    - name: Run functional tests
+      run: make check
+    - name: Display test logs
+      if: ${{ always() }}
+      run: |
+        cat tests/ftests-wrapper.sh.log
+    - name: Archive test logs
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: Belayd functional test logs
+        path: tests/*.log
+    - name: Collate code coverage results
+      uses: ./.github/actions/code-coverage
+    - name: Upload code coverage results
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: ./lcov.total
+        flag-name: "Belayd Functional Tests"
+        parallel: True
+    - name: Archive code coverage results
+      if: ${{ always() }}
+      uses: actions/upload-artifact@v3
+      with:
+        name: Belayd Functional Tests Code Coverage
+        path: lcov.*
+
+  finalize:
+    name: Finalize the test run
+    if: ${{ always() }}
+    needs: [functional_tests]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Finalize code coverage results
+      uses: coverallsapp/github-action@master
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        parallel-finished: True
