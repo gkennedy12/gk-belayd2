@@ -12,6 +12,8 @@ SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
 
 if [ "$START_DIR" != "$SCRIPT_DIR" ]; then
 	cp "$SCRIPT_DIR"/*.py "$START_DIR"
+	cp "$SCRIPT_DIR"/*.json "$START_DIR"
+	cp "$SCRIPT_DIR"/*.token "$START_DIR"
 fi
 
 
@@ -28,6 +30,8 @@ fi
 
 if [ "$START_DIR" != "$SCRIPT_DIR" ]; then
 	rm -f "$START_DIR"/*.py
+	rm -f "$START_DIR"/*.json
+	rm -f "$START_DIR"/*.token
 	rm -fr "$START_DIR"/__pycache__
 	rm -f ftests.py.log
 fi

@@ -1,7 +1,8 @@
 @CODE_COVERAGE_RULES@
 
 ACLOCAL_AMFLAGS = -I m4
-SUBDIRS = doc include src tests
+DIST_SUBDIRS = doc include src tests
+SUBDIRS = ${DIST_SUBDIRS}
 
 EXTRA_DIST =
 

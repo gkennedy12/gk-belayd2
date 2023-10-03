@@ -22,5 +22,10 @@ EXTRA_DIST_PYTHON_TESTS = \
 EXTRA_DIST_PYTHON_CFGS = \
 	001-cause-time_of_day.json.token 
 
-EXTRA_DIST = ftests-wrapper.sh \
-	${EXTRA_DIST_PYTHON_TESTS} ${EXTRA_DIST_PYTHON_CFG}
+EXTRA_DIST = ftests-wrapper.sh ${EXTRA_DIST_PYTHON_FILES} \
+	${EXTRA_DIST_PYTHON_TESTS} ${EXTRA_DIST_PYTHON_CFGS}
+
+clean-local: clean-local-check
+.PHONY: clean-local-check
+clean-local-check:
+	-rm -f *.pyc
