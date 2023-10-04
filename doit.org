@@ -1,0 +1,2 @@
+set -x
+belayd --interval=5 --config=doc/examples/jimmy-buffett-config.json

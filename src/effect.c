@@ -17,6 +17,7 @@
 
 const char * const effect_names[] = {
 	"print",
+	"mem_resize",
 	"validate",
 };
 static_assert(ARRAY_SIZE(effect_names) == EFFECT_CNT,
@@ -24,6 +25,7 @@ static_assert(ARRAY_SIZE(effect_names) == EFFECT_CNT,
 
 const struct effect_functions effect_fns[] = {
 	{print_init, print_main, print_exit},
+	{mem_resize_init, mem_resize_main, mem_resize_exit},
 	{validate_init, validate_main, validate_exit},
 };
 static_assert(ARRAY_SIZE(effect_fns) == EFFECT_CNT,

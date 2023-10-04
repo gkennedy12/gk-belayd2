@@ -1,0 +1,2 @@
+set -x
+src/belayd --interval=5 --config=doc/examples/pressure.json 2>&1 |tee /tmp/belayd.out

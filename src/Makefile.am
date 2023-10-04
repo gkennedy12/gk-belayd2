@@ -4,10 +4,13 @@ SOURCES = \
 	belayd-internal.h \
 	causes/days_of_the_week.c \
 	causes/time_of_day.c \
+	causes/pressure.c \
 	cause.c \
 	cause.h \
 	defines.h \
+	utils/pressure_utils.c \
 	effects/print.c \
+	effects/mem_resize.c \
 	effects/validate.c \
 	effect.c \
 	effect.h \

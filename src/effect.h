@@ -20,6 +20,7 @@
 
 enum effect_enum {
 	EFFECT_PRINT = 0,
+	MEM_RESIZE,
 	EFFECT_VALIDATE,
 
 	EFFECT_CNT
@@ -55,6 +56,11 @@ int print_init(struct effect * const eff, struct json_object *eff_obj,
 	       const struct cause * const cse);
 int print_main(struct effect * const eff);
 void print_exit(struct effect * const eff);
+
+int mem_resize_init(struct effect * const eff, struct json_object *eff_obj,
+	       const struct cause * const cse);
+int mem_resize_main(struct effect * const eff);
+void mem_resize_exit(struct effect * const eff);
 
 int validate_init(struct effect * const eff, struct json_object *eff_obj,
 		  const struct cause * const cse);
