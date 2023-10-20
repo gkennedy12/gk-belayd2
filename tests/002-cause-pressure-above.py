@@ -10,7 +10,7 @@
 import belayd
 import consts
 
-CONFIG = '002-cause-pressure.json.token'
+CONFIG = '002-cause-pressure-above.json.token'
 INTERVAL = 1
 MAX_LOOPS = 10
 EXPECTED_RET = 42
