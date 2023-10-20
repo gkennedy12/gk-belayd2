@@ -28,3 +28,4 @@ tags
 /stamp-h1
 /cov-int
 /src/belayd
+*.trs
