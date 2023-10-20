@@ -48,6 +48,8 @@ int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
 	char *tret;
 	int i;
 
+	fprintf(stderr, "XXX %s:\n", __func__);
+
 	opts = malloc(sizeof(struct time_of_day_opts));
 	if (!opts) {
 		ret = -ENOMEM;
@@ -58,6 +60,7 @@ int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
 
 	exists = json_object_object_get_ex(cse_obj, "args", &args_obj);
 	if (!exists || !args_obj) {
+fprintf(stderr, "XXX -EINVAL(0)\n");
 		ret = -EINVAL;
 		goto error;
 	}
@@ -80,6 +83,8 @@ int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
 		 * We were unable to process all of the characters in the
 		 * string.  Fail and notify the user
 		 */
+fprintf(stderr, "XXX -EINVAL(1)\n");
+fprintf(stderr, "XXX time_str=%s\n", time_str);
 		ret = -EINVAL;
 		goto error;
 	}
@@ -100,6 +105,7 @@ int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
 	}
 
 	if (!found_op) {
+fprintf(stderr, "XXX -EINVAL(2)\n");
 		ret = -EINVAL;
 		goto error;
 	}
@@ -107,9 +113,11 @@ int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
 	/* we have successfully setup the time_of_day cause */
 	cse->data = (void *)opts;
 
+	fprintf(stderr, "XXX %s: ret=%d\n", __func__, ret);
 	return ret;
 
 error:
+	fprintf(stderr, "XXX %s: error: ret=%d\n", __func__, ret);
 	if (opts && opts->time_str)
 		free(opts->time_str);
 
@@ -125,6 +133,8 @@ int time_of_day_main(struct cause * const cse, int time_since_last_run)
 	struct tm *cur_tm;
 	time_t cur_time;
 	int ret = 0;
+
+	fprintf(stderr, "%s:\n", __func__);
 
 	time(&cur_time);
 	cur_tm = localtime(&cur_time);
@@ -163,6 +173,8 @@ void time_of_day_exit(struct cause * const cse)
 {
 	struct time_of_day_opts *opts = (struct time_of_day_opts *)cse->data;
 
+	fprintf(stderr, "%s:\n", __func__);
+
 	if (opts->time_str)
 		free(opts->time_str);
 
@@ -172,6 +184,8 @@ void time_of_day_exit(struct cause * const cse)
 void time_of_day_print(const struct cause * const cse, FILE *file)
 {
 	struct time_of_day_opts *opts = (struct time_of_day_opts *)cse->data;
+
+	fprintf(stderr, "%s:\n", __func__);
 
 	switch (opts->op) {
 		case OP_GREATER_THAN:

@@ -75,6 +75,7 @@ def parse_args():
                         )
 
     config = Config(parser.parse_args())
+    print("parse_args: config:", config.args)
 
     if config.args.skip is None or config.args.skip == '':
         pass

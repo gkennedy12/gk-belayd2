@@ -62,6 +62,8 @@ int pressure_init(struct cause * const cse, struct json_object *cse_obj)
 	int ret = 0;
 	int i;
 
+	fprintf(stderr, "XXX pressure_init:\n");
+
 	opts = malloc(sizeof(struct pressure_opts));
 	if (!opts) {
 		ret = -ENOMEM;

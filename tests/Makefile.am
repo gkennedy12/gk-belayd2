@@ -17,10 +17,12 @@ EXTRA_DIST_PYTHON_FILES = \
 	utils.py
 
 EXTRA_DIST_PYTHON_TESTS = \
-	001-cause-time_of_day.py
+	001-cause-time_of_day.py \
+	002-cause-pressure.py
 
 EXTRA_DIST_PYTHON_CFGS = \
-	001-cause-time_of_day.json.token 
+	001-cause-time_of_day.json.token \
+	002-cause-pressure.json.token 
 
 EXTRA_DIST = ftests-wrapper.sh ${EXTRA_DIST_PYTHON_FILES} \
 	${EXTRA_DIST_PYTHON_TESTS} ${EXTRA_DIST_PYTHON_CFGS}

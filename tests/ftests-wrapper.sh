@@ -8,17 +8,23 @@ AUTOMAKE_SKIPPED=77
 AUTOMAKE_HARD_ERROR=99
 
 START_DIR=$PWD
+echo START_DIR: $START_DIR
 SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )
+echo SCRIPT_DIR: $SCRIPT_DIR
 
 if [ "$START_DIR" != "$SCRIPT_DIR" ]; then
 	cp "$SCRIPT_DIR"/*.py "$START_DIR"
 	cp "$SCRIPT_DIR"/*.json "$START_DIR"
 	cp "$SCRIPT_DIR"/*.token "$START_DIR"
+	ls -lrt
 fi
 
 
+set -x
 ./ftests.py -l 10 -L "$START_DIR/ftests.py.log"
 RET=$?
+set +x
+echo RET: $RET
 
 if [ -z "$srcdir" ]; then
 	# $srcdir is set by automake but will likely be empty when run by hand and

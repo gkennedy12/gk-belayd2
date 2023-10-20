@@ -51,6 +51,7 @@ def belayd(config=None, bhelp=False, interval=None, log_location=None,
         cmd.append(str(max_loops))
 
     try:
+        print("XXX belayd.py cmd:", cmd);
         Run.run(cmd)
     except RunError as re:
         if re.ret == expected_ret:
