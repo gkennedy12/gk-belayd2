@@ -26,6 +26,7 @@
 #include "utils/pressure_utils.h"
 
 static int verbose = 0;
+static int test = 0;
 
 enum op_enum {
 	OP_GREATER_THAN = 0,
@@ -56,13 +57,14 @@ int pressure_init(struct cause * const cse, struct json_object *cse_obj)
 	const char *threshold_str, *op_str;
 	const char *duration_str;
 	const char *verbose_str;
+	const char *test_str;
 	const char *pressure_fn;
 	json_bool exists;
 	bool found_op;
 	int ret = 0;
 	int i;
 
-	fprintf(stderr, "XXX pressure_init:\n");
+	// fprintf(stderr, "XXX pressure_init:\n");
 
 	opts = malloc(sizeof(struct pressure_opts));
 	if (!opts) {
@@ -83,6 +85,12 @@ int pressure_init(struct cause * const cse, struct json_object *cse_obj)
                 verbose = atoi(verbose_str);
         }
         if (verbose) fprintf(stderr, "\nXXX %s:\n", __func__);
+
+        ret = parse_string(args_obj, "test", &test_str);
+        if (ret == 0) {
+                test = atoi(test_str);
+        }
+        if (verbose) fprintf(stderr, "\nXXX %s: TEST\n", __func__);
 
 	ret = parse_string(args_obj, "threshold", &threshold_str);
 	if (ret)
@@ -138,6 +146,7 @@ int pressure_init(struct cause * const cse, struct json_object *cse_obj)
 	return ret;
 
 error:
+	fprintf(stderr, "opressure_init: error: ret=%d\n", ret);
 	if (opts)
 		free(opts);
 
@@ -165,6 +174,9 @@ int pressure_main(struct cause * const cse, int time_since_last_run)
 			pvp = parse_pressure("some", opts->pressure_fn, pvp);
 
 			if (pvp) {
+				if (test) {
+					pvp->avg60 = opts->threshold + 1;
+				}
 				if (verbose)
 					fprintf(stderr,
 						"XXX pvp->avg10=%2.2f (%d), pvp->avg60=%2.2f\n",
