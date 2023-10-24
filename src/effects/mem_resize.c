@@ -470,7 +470,7 @@ int handlepressure(struct mem_resize_opts *opts)
 	if (verbose > 1) fprintf(stderr, "total_requested_size=%lld, opts->max_mem=%lld\n",
 	    total_requested_size, opts->max_mem);
 	if (opts->memory_reclaim && !total_requested_size) {
-		fprintf(stderr, "\nXXX Memory reclaim and no requested_size memory allocated.\n\n");
+		fprintf(stderr, "\nXXX Memory reclaim and no \"requested-size\" memory allocated.\n\n");
 		return 0;
 	}
 	mp = &mach_pressure;
