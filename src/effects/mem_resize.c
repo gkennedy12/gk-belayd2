@@ -325,10 +325,11 @@ int find_vms(struct vm_ports *vmp, struct mem_resize_opts *opts, long long *tota
                 vmp[j].online = 0;
 
 	sprintf(cmdline, "timeout --foreground -s KILL 15 find /sys/fs/cgroup/%s.slice/ -name cgroup.procs |grep -v %s.slice/cgroup.procs >/tmp/procs.out 2>&1", opts->pressure_slice, opts->pressure_slice);
+	if (verbose > 3) fprintf(stderr, "find_vms: cmdline: %s\n", cmdline);
 	ret = system(cmdline);
         if (ret) {
                 fprintf(stderr, "XXX find_vms: ret: %d\n", ret);
-                return -1;
+                return 0;
         }
         fp = fopen("/tmp/procs.out", "r");
         if (fp == NULL) {
