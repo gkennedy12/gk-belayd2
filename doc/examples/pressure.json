@@ -25,7 +25,7 @@
 						"threshold": "7",
 						"post_action_delay": "5",
 						"max_mem": "17",
-						"verbose": "2"
+						"verbose": "1"
 					}
 				}
 			]
@@ -55,7 +55,7 @@
 						"threshold": "2",
 						"post_action_delay": "10",
 						"memory_reclaim": "1",
-						"verbose": "4"
+						"verbose": "1"
 					}
 				}
 			]
