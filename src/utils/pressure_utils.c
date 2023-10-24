@@ -27,10 +27,6 @@
 
 static int verbose = 0;
 
-// char HOST_MEM_PRESSURE[] = {"/sys/fs/cgroup/machine.slice/memory.pressure"};
-//	struct some_pressure mach_pressure, *mp;
-//	mp = &mach_pressure;
-//	mp = parse_pressure(SOME, (cpu_flag) ? HOST_CPU_PRESSURE : HOST_MEM_PRESSURE, mp);
 struct pressure_values *
 parse_pressure(char *what, char *pfn, struct pressure_values *pp)
 {
