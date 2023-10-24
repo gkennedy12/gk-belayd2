@@ -29,13 +29,11 @@ struct vm_ports {
 	int maxmem;
         char *path;
         char *socket_path;
+        char *name;
 };
 
 #define MAX_VMS         32
 #define GB              (1024ULL * 1024ULL * 1024ULL)
-
-#define MACH_SLICE_STR	"/sys/fs/cgroup/machine.slice"
-#define MACH_MEM_HIGH_PATH "/sys/fs/cgroup/machine.slice/memory.high"
 
 #define DEFAULT_GRANULARITY	2147483648
 #define DEFAULT_MIN_LOW_MEM	6442450944
@@ -44,9 +42,10 @@ static int verbose = 0;
 
 struct mem_resize_opts {
         char *what;
-        char *pressure_fn;
+        char *pressure_slice;
         char *qmp_path;
         int threshold;
+	char *managed_str;
         int post_action_delay;
         int memory_reclaim;
         long long max_mem;
@@ -59,7 +58,8 @@ int mem_resize_init(struct effect * const eff, struct json_object *eff_obj,
 	struct json_object *args_obj;
 	struct mem_resize_opts *opts;
 	const char *opts_str;
-	const char *pressure_fn;
+	const char *pressure_slice;
+	const char *managed_str;
 	const char *qmp_path_str;
 	json_bool exists;
 	int ret = 0;
@@ -90,21 +90,21 @@ int mem_resize_init(struct effect * const eff, struct json_object *eff_obj,
         opts->threshold = atoi(opts_str);
         if (verbose) fprintf(stderr, "mem_resize_init: opts->threshold: %d\n", opts->threshold);
 
-        ret = parse_string(args_obj, "pressure_file", &pressure_fn);
+        ret = parse_string(args_obj, "pressure_slice", &pressure_slice);
         if (ret)
                 goto error;
 
-        opts->pressure_fn = malloc(sizeof(char) * strlen(pressure_fn));
-        if (!opts->pressure_fn) {
+        opts->pressure_slice = malloc(sizeof(char) * strlen(pressure_slice));
+        if (!opts->pressure_slice) {
 		fprintf(stderr, "mem_resize_init: pressure filename option missing.\n");
                 ret = -ENOMEM;
                 goto error;
         }
 
-        strcpy(opts->pressure_fn, pressure_fn);
+        strcpy(opts->pressure_slice, pressure_slice);
 
         if (verbose)
-		fprintf(stderr, "mem_resize_init: opts->pressure_fn: %s\n", opts->pressure_fn);
+		fprintf(stderr, "mem_resize_init: opts->pressure_slice: %s\n", opts->pressure_slice);
 
         ret = parse_string(args_obj, "qmp_path", &qmp_path_str);
         if (ret)
@@ -121,6 +121,19 @@ int mem_resize_init(struct effect * const eff, struct json_object *eff_obj,
 
         if (verbose)
 		fprintf(stderr, "mem_resize_init: opts->qmp_path: %s\n", opts->qmp_path);
+
+	ret = parse_string(args_obj, "managed_str", &managed_str);
+	if (!ret) {
+		opts->managed_str = malloc(sizeof(char) * strlen(managed_str));
+		if (!opts->managed_str) {
+			ret = -ENOMEM;
+			goto error;
+		}
+
+		strcpy(opts->managed_str, managed_str);
+
+		if (verbose) fprintf(stderr, "managed_str: opts->managed_str: %s\n", opts->managed_str);
+	}
 
         ret = parse_string(args_obj, "post_action_delay", &opts_str);
         if (ret) {
@@ -238,7 +251,7 @@ long long runcmdll(char *cmdp)
 long long get_stat(char *stat_fn, char *pp)
 {
         long long ret = 0;
-        char cmdline[256];
+        char cmdline[512];
 
         if (pp == NULL)
                 return 0;
@@ -311,7 +324,8 @@ int find_vms(struct vm_ports *vmp, struct mem_resize_opts *opts, long long *tota
 	for (j = 0; j < MAX_VMS ; j++)
                 vmp[j].online = 0;
 
-        ret = system("timeout --foreground -s KILL 15 find /sys/fs/cgroup/machine.slice/ -name cgroup.procs |grep -v machine.slice/cgroup.procs >/tmp/procs.out 2>&1");
+	sprintf(cmdline, "timeout --foreground -s KILL 15 find /sys/fs/cgroup/%s.slice/ -name cgroup.procs |grep -v %s.slice/cgroup.procs >/tmp/procs.out 2>&1", opts->pressure_slice, opts->pressure_slice);
+	ret = system(cmdline);
         if (ret) {
                 fprintf(stderr, "XXX find_vms: ret: %d\n", ret);
                 return -1;
@@ -324,7 +338,6 @@ int find_vms(struct vm_ports *vmp, struct mem_resize_opts *opts, long long *tota
 	i = 0;
         while ((read = getline(&line, &len, fp)) != -1) {
                 line[strcspn(line, "\n")] = 0;
-		// /sys/fs/cgroup/machine.slice/vm1569.service/cgroup.procs
 		fp2 = fopen(line, "r");
 		if (fp2 == NULL) {
 			perror("open");
@@ -343,6 +356,20 @@ int find_vms(struct vm_ports *vmp, struct mem_resize_opts *opts, long long *tota
 				memset(&vmp[i], 0, sizeof(struct vm_ports));
 
                                 vmp[i].pid = runcmdi("awk '{print $2}' /tmp/qemu.out");
+				if (opts->managed_str) {
+					// ps -edf |grep 3831423 |grep "name belayd_managed_vm" |sed 's/^.*name //' |sed 's/ .*//'
+					buf[0] = 0;
+					sprintf(cmdline, "grep \"name %s\" /tmp/qemu.out |sed 's/^.*-name //' |sed 's/ .*//'",
+						opts->managed_str);
+					runcmds(cmdline, buf);
+					if (buf[0] == 0) {
+						fprintf(stderr, "find_vms: ret=%d, qemu PID %d, not %s\n",
+							ret, vmp[i].pid, opts->managed_str);
+						continue;
+					}
+					vmp[i].name = (char *)malloc(strlen(buf) + 1);
+					strcpy(vmp[i].name, buf);
+				}
 				subp = strstr(line, "/cgroup.procs");
 				subp[0] = 0;
 				//line[strstr(line, "/cgroup.procs")] = 0;
@@ -384,6 +411,8 @@ void dump_vms(struct vm_ports *vmp)
 		    vmp[i].block_size, vmp[i].requested_size, vmp[i].maxmem);
                 fprintf(stderr, "path=%s\n", vmp[i].path);
                 fprintf(stderr, "socket_path=%s\n", vmp[i].socket_path);
+		if (vmp[i].name)
+			fprintf(stderr, "name=%s\n", vmp[i].name);
         }
 	fprintf(stderr, "\n");
 }
@@ -394,6 +423,9 @@ int handlepressure(struct mem_resize_opts *opts)
 	int vm_count = 0;
 	int i;
 	char pp[1024];
+	char slice_str[256];
+	char press_str[512];
+	char high_str[512];
 	char cmdline[2048];
 	int machine_pressure_exists = 0;
 	int vm_pressure_exists = 0;
@@ -415,11 +447,15 @@ int handlepressure(struct mem_resize_opts *opts)
 		system("date");
 	}
 
-	sprintf(cmdline, "cat %s", opts->pressure_fn);
+	sprintf(cmdline, "cat /sys/fs/cgroup/%s.slice/memory.pressure", opts->pressure_slice);
 	if (verbose > 3) fprintf(stderr, "handlepressure: cmdline: %s\n", cmdline);
 	system(cmdline);
 
 	memset(vm_ports, 0, sizeof(struct vm_ports) * MAX_VMS);
+
+	sprintf(slice_str, "/sys/fs/cgroup/%s.slice", opts->pressure_slice);
+	sprintf(press_str, "%s/memory.pressure", slice_str);
+	sprintf(high_str, "%s/memory.high", slice_str);
 
 	vm_count = find_vms(vm_ports, opts, &total_requested_size);
 	if (verbose) fprintf(stderr, "handlepressure: vm_count=%d\n", vm_count);
@@ -437,9 +473,9 @@ int handlepressure(struct mem_resize_opts *opts)
 		return 0;
 	}
 	mp = &mach_pressure;
-	mp = parse_pressure("some", opts->pressure_fn, mp);
+	mp = parse_pressure("some", press_str, mp);
 	if (mp == NULL) {
-		fprintf(stderr, "XXX Can't get pressure from %s\n", opts->pressure_fn);
+		fprintf(stderr, "XXX Can't get pressure from %s\n", opts->pressure_slice);
 		goto handlepressure_cleanup;
 	}
 	if (verbose) fprintf(stderr, "XXX mp->avg10=%2.2f (%d), mp->avg60=%2.2f\n",
@@ -453,9 +489,9 @@ int handlepressure(struct mem_resize_opts *opts)
 			machine_pressure_exists = 1;
 	}
 
-	mach_memory_current = get_stat("memory.current", MACH_SLICE_STR);
-	mach_memory_max = get_stat("memory.max", MACH_SLICE_STR);
-	mach_memory_high = get_stat("memory.high", MACH_SLICE_STR);
+	mach_memory_current = get_stat("memory.current", slice_str);
+	mach_memory_max = get_stat("memory.max", slice_str);
+	mach_memory_high = get_stat("memory.high", slice_str);
 
 	if (verbose) {
 		fprintf(stderr, "XXX THRESHOLD: %d, MEMORY_RECLAIM: %d, POST_ACTION_DELAY %d\n",
@@ -650,12 +686,12 @@ handlepressure_cleanup:
 		int increment = 1;
 #endif
 
-		mach_memory_current = get_stat("memory.current", MACH_SLICE_STR);
+		mach_memory_current = get_stat("memory.current", slice_str);
 		if (verbose)
 			fprintf(stderr,
 			    "XXX mach_memory_current=%lld (NOW), increment=%d\n",
 			    mach_memory_current, increment);
-		set_mem_high(MACH_MEM_HIGH_PATH, mach_memory_current + (increment * 1 * GB));
+		set_mem_high(high_str, mach_memory_current + (increment * 1 * GB));
 	}
 	if (total_action_taken && opts->post_action_delay) {
 		for (i = 0; i < opts->post_action_delay; i++) {
@@ -683,12 +719,7 @@ int mem_resize_main(struct effect * const eff)
 
 	fprintf(stderr, "\nXXX %s:\n", __func__);
 
-	if (verbose) fprintf(stderr, "Print effect triggered by: %s\n", opts->pressure_fn);
-
-	if (strcmp(opts->pressure_fn, "/sys/fs/cgroup/machine.slice/memory.pressure") != 0) {
-		fprintf(stderr, "mem_resize_main: does not handle pressure for: %s\n", opts->pressure_fn);
-		return 0;
-	}
+	if (verbose) fprintf(stderr, "Print effect triggered by: %s\n", opts->pressure_slice);
 
 	total_action_taken = handlepressure(opts);
 	if (verbose) fprintf(stderr, "mem_resize_main: total_action_taken=%d\n", total_action_taken);

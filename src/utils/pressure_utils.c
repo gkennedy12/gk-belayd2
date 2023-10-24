@@ -28,7 +28,7 @@
 static int verbose = 0;
 
 struct pressure_values *
-parse_pressure(char *what, char *pfn, struct pressure_values *pp)
+parse_pressure(char *what, char *pressure_fn, struct pressure_values *pp)
 {
         char some[256];
         char full[256];
@@ -39,9 +39,9 @@ parse_pressure(char *what, char *pfn, struct pressure_values *pp)
         size_t len = 0;
         ssize_t read;
 
-	if (verbose > 3) fprintf(stderr, "parse_pressure: what=%s, pfn=%s\n", what, pfn);
+	if (verbose > 3) fprintf(stderr, "parse_pressure: what=%s, pressure_fn=%s\n", what, pressure_fn);
 
-        fp = fopen(pfn, "r");
+        fp = fopen(pressure_fn, "r");
         if (fp == NULL) {
                 perror("open");
                 return NULL;

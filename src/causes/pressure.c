@@ -43,7 +43,7 @@ static_assert(ARRAY_SIZE(op_names) == OP_CNT,
 
 struct pressure_opts {
 	char *what;
-	char *pressure_fn;
+	char *pressure_slice;
 	int threshold;
 	int duration;
 	enum op_enum op;
@@ -58,7 +58,7 @@ int pressure_init(struct cause * const cse, struct json_object *cse_obj)
 	const char *duration_str;
 	const char *verbose_str;
 	const char *test_str;
-	const char *pressure_fn;
+	const char *pressure_slice;
 	json_bool exists;
 	bool found_op;
 	int ret = 0;
@@ -108,19 +108,19 @@ int pressure_init(struct cause * const cse, struct json_object *cse_obj)
 		opts->duration = 99999;		// default
 	if (verbose) fprintf(stderr, "pressure_init: opts->duration: %d\n", opts->duration);
 
-	ret = parse_string(args_obj, "pressure_file", &pressure_fn);
+	ret = parse_string(args_obj, "pressure_slice", &pressure_slice);
 	if (ret)
 		goto error;
 
-	opts->pressure_fn = malloc(sizeof(char) * strlen(pressure_fn));
-	if (!opts->pressure_fn) {
+	opts->pressure_slice = malloc(sizeof(char) * strlen(pressure_slice));
+	if (!opts->pressure_slice) {
 		ret = -ENOMEM;
 		goto error;
 	}
 
-	strcpy(opts->pressure_fn, pressure_fn);
+	strcpy(opts->pressure_slice, pressure_slice);
 
-	if (verbose) fprintf(stderr, "opressure_init: opts->pressure_fn: %s\n", opts->pressure_fn);
+	if (verbose) fprintf(stderr, "opressure_init: opts->pressure_slice: %s\n", opts->pressure_slice);
 
 	ret = parse_string(args_obj, "operator", &op_str);
 	if (ret)
@@ -158,6 +158,7 @@ int pressure_main(struct cause * const cse, int time_since_last_run)
 	struct pressure_opts *opts = (struct pressure_opts *)cse->data;
 	int ret = 0;
 	struct pressure_values the_pressure_values, *pvp;
+	char press_str[256];
 	time_t cur_time;
 
 	if (verbose) {
@@ -168,10 +169,15 @@ int pressure_main(struct cause * const cse, int time_since_last_run)
 	if (!opts->threshold) 		// nothing to do?
 		return 0;
 
+	if (!opts->pressure_slice)
+		return 0;
+
+	sprintf(press_str, "/sys/fs/cgroup/%s.slice/memory.pressure", opts->pressure_slice);
+
 	switch (opts->op) {
 		case OP_GREATER_THAN:
 			pvp = &the_pressure_values;
-			pvp = parse_pressure("some", opts->pressure_fn, pvp);
+			pvp = parse_pressure("some", press_str, pvp);
 
 			if (pvp) {
 				if (test) {
@@ -183,8 +189,7 @@ int pressure_main(struct cause * const cse, int time_since_last_run)
 						pvp->avg10, (int)pvp->avg10, pvp->avg60);
 			} else {
 				fprintf(stderr,
-					"parse_pressure: XXX Can't get pressure for %s\n",
-					opts->pressure_fn);
+					"parse_pressure: XXX Can't get pressure for %s\n", press_str);
 			}
 			if ((int)pvp->avg60 > opts->threshold) {
 				time(&cur_time);
@@ -208,7 +213,7 @@ int pressure_main(struct cause * const cse, int time_since_last_run)
 			break;
 		case OP_LESS_THAN:
 			pvp = &the_pressure_values;
-			pvp = parse_pressure("some", opts->pressure_fn, pvp);
+			pvp = parse_pressure("some", press_str, pvp);
 
 			if (pvp) {
 				if (verbose)
@@ -217,8 +222,7 @@ int pressure_main(struct cause * const cse, int time_since_last_run)
 						pvp->avg10, (int)pvp->avg10, pvp->avg60);
 			} else {
 				fprintf(stderr,
-					"parse_pressure: XXX Can't get pressure for %s\n",
-					opts->pressure_fn);
+					"parse_pressure: XXX Can't get pressure for %s\n", press_str);
 			}
 			if ((int)pvp->avg60 < opts->threshold) {
 				time(&cur_time);

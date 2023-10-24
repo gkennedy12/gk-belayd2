@@ -7,7 +7,7 @@
 				{
 					"name": "pressure",
 					"args": {
-						"pressure_file": "/sys/fs/cgroup/machine.slice/memory.pressure",
+						"pressure_slice": "belayd",
 						"threshold": "7",
 						"duration": "5",
 						"operator": "greaterthan",
@@ -19,7 +19,8 @@
 				{
 					"name": "mem_resize",
 					"args": {
-						"pressure_file": "/sys/fs/cgroup/machine.slice/memory.pressure",
+						"pressure_slice": "belayd",
+						"managed_str": "belayd_managed_vm",
 						"qmp_path": "/work/qemu/qemu/scripts/qmp",
 						"threshold": "7",
 						"post_action_delay": "5",
@@ -36,7 +37,7 @@
 				{
 					"name": "pressure",
 					"args": {
-						"pressure_file": "/sys/fs/cgroup/machine.slice/memory.pressure",
+						"pressure_slice": "belayd",
 						"threshold": "2",
 						"duration": "10",
 						"operator": "lessthan",
@@ -48,12 +49,13 @@
 				{
 					"name": "mem_resize",
 					"args": {
-						"pressure_file": "/sys/fs/cgroup/machine.slice/memory.pressure",
+						"pressure_slice": "belayd",
+						"managed_str": "belayd_managed_vm",
 						"qmp_path": "/work/qemu/qemu/scripts/qmp",
 						"threshold": "2",
 						"post_action_delay": "10",
 						"memory_reclaim": "1",
-						"verbose": "2"
+						"verbose": "4"
 					}
 				}
 			]
