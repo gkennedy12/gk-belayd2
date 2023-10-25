@@ -21,6 +21,7 @@
 enum cause_enum {
 	TIME_OF_DAY = 0,
 	DAYS_OF_THE_WEEK,
+	PRESSURE,
 
 	CAUSE_CNT
 };
@@ -61,5 +62,10 @@ int days_of_the_week_init(struct cause * const cse, struct json_object *cse_obj)
 int days_of_the_week_main(struct cause * const cse, int time_since_last_run);
 void days_of_the_week_exit(struct cause * const cse);
 void days_of_the_week_print(const struct cause * const cse, FILE *file);
+
+int pressure_init(struct cause * const cse, struct json_object *cse_obj);
+int pressure_main(struct cause * const cse, int time_since_last_run);
+void pressure_exit(struct cause * const cse);
+void pressure_print(const struct cause * const cse, FILE *file);
 
 #endif /* __BELAYD_CAUSE_H */
