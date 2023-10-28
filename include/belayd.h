@@ -12,11 +12,6 @@
 #include <json-c/json.h>
 #include <stdio.h>
 
-/**
- * Opaque structure that contains rule information
- */
-struct rule;
-
 /*
  * Opaque structure that contains cause information
  */

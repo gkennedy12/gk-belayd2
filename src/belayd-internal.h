@@ -25,12 +25,12 @@ enum log_location {
 	LOG_LOC_CNT
 };
 
-struct rule {
+struct belayd_rule {
 	char *name;
 	struct belayd_cause *causes;
 	struct belayd_effect *effects;
 
-	struct rule *next;
+	struct belayd_rule *next;
 };
 
 struct belayd_ctx {
@@ -40,7 +40,7 @@ struct belayd_ctx {
 	int max_loops;
 
 	/* internal settings and structures */
-	struct rule *rules;
+	struct belayd_rule *rules;
 };
 
 /*

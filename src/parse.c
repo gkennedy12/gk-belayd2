@@ -93,7 +93,7 @@ int parse_int(struct json_object * const obj, const char * const key, int * cons
 error:
 	return ret;
 }
-static int parse_cause(struct rule * const rule, struct json_object * const cause_obj)
+static int parse_cause(struct belayd_rule * const rule, struct json_object * const cause_obj)
 {
 	struct belayd_cause *cse = NULL;
 	bool found_cause = false;
@@ -166,7 +166,7 @@ error:
 	return ret;
 }
 
-static int parse_effect(struct rule * const rule, struct json_object * const effect_obj)
+static int parse_effect(struct belayd_rule * const rule, struct json_object * const effect_obj)
 {
 	struct belayd_effect *eff = NULL;
 	bool found_effect = false;
@@ -242,8 +242,8 @@ error:
 static int parse_rule(struct belayd_ctx * const ctx, struct json_object * const rule_obj)
 {
 	struct json_object *causes_obj, *cause_obj, *effects_obj, *effect_obj;
+	struct belayd_rule *rule = NULL;
 	int i, cause_cnt, effect_cnt;
-	struct rule *rule = NULL;
 	json_bool exists;
 	const char *name;
 	int ret = 0;
@@ -252,13 +252,13 @@ static int parse_rule(struct belayd_ctx * const ctx, struct json_object * const 
 	if (ret )
 		goto error;
 
-	rule = malloc(sizeof(struct rule));
+	rule = malloc(sizeof(struct belayd_rule));
 	if (!rule) {
 		ret = -ENOMEM;
 		goto error;
 	}
 
-	memset(rule, 0, sizeof(struct rule));
+	memset(rule, 0, sizeof(struct belayd_rule));
 
 	rule->name = malloc(strlen(name) + 1);
 	if (!rule->name) {

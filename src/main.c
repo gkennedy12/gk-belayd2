@@ -194,9 +194,9 @@ err:
 
 void cleanup(struct belayd_ctx *ctx)
 {
+	struct belayd_rule *rule, *rule_next;
 	struct belayd_effect *eff, *eff_next;
 	struct belayd_cause *cse, *cse_next;
-	struct rule *rule, *rule_next;
 
 	rule = ctx->rules;
 
@@ -239,9 +239,9 @@ void cleanup(struct belayd_ctx *ctx)
 int belayd_loop(struct belayd_ctx * const ctx)
 {
 	struct belayd_effect *eff;
+	struct belayd_rule *rule;
 	struct belayd_cause *cse;
 	unsigned int loop_cnt;
-	struct rule *rule;
 	int ret = 0;
 
 	ret = parse_config(ctx);
