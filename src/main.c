@@ -101,6 +101,48 @@ void belayd_release(struct belayd_ctx **ctx)
 	(*ctx) = NULL;
 }
 
+int belayd_set_attr(struct belayd_ctx * const ctx, enum belayd_attr attr, uint32_t value)
+{
+	int ret = 0;
+
+	switch (attr) {
+	case BELAYD_ATTR_INTERVAL:
+		ctx->interval = (int)value;
+		break;
+	case BELAYD_ATTR_MAX_LOOPS:
+		ctx->max_loops = (int)value;
+		break;
+	default:
+		ret = -EINVAL;
+		break;
+	}
+
+	return ret;
+}
+
+int belayd_get_attr(struct belayd_ctx * const ctx, enum belayd_attr attr,
+		    uint32_t * const value)
+{
+	int ret = 0;
+
+	if (!value)
+		return -EINVAL;
+
+	switch (attr) {
+	case BELAYD_ATTR_INTERVAL:
+		*value = (uint32_t)ctx->interval;
+		break;
+	case BELAYD_ATTR_MAX_LOOPS:
+		*value = (uint32_t)ctx->max_loops;
+		break;
+	default:
+		ret = -EINVAL;
+		break;
+	}
+
+	return ret;
+}
+
 int parse_opts(int argc, char *argv[], struct belayd_ctx * const ctx)
 {
 	struct option long_options[] = {

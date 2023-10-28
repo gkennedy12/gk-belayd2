@@ -28,6 +28,16 @@ struct belayd_effect;
 struct belayd_ctx;
 
 /**
+ * belayd context attributes
+ */
+enum belayd_attr {
+	BELAYD_ATTR_INTERVAL = 0, /* seconds */
+	BELAYD_ATTR_MAX_LOOPS,
+
+	BELAYD_ATTR_CNT
+};
+
+/**
  * Initialization routine for a cause
  * @param cse Cause structure for this cause
  * @param cse_obj JSON object representation of this cause
@@ -121,6 +131,23 @@ void belayd_release(struct belayd_ctx **ctx);
  * @param ctx the belayd configuration context
  */
 int belayd_loop(struct belayd_ctx * const ctx);
+
+/**
+ * Set an attribute in the belayd context
+ * @param ctx belayd options struct
+ * @param attr attribute name
+ * @param value attribute value
+ */
+int belayd_set_attr(struct belayd_ctx * const ctx, enum belayd_attr attr, uint32_t value);
+
+/**
+ * Get the value of an attribute in the belayd context
+ * @param ctx belayd options struct
+ * @param attr attribute name
+ * @param value attribute value
+ */
+int belayd_get_attr(struct belayd_ctx * const ctx, enum belayd_attr attr,
+		    uint32_t * const value);
 
 /**
  * Get the private data pointer in a cause structure
