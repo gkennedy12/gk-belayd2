@@ -74,7 +74,7 @@ int consume_day(struct days_of_the_week_opts * const opts, const char * const da
 	return 0;
 }
 
-int days_of_the_week_init(struct cause * const cse, struct json_object *cse_obj)
+int days_of_the_week_init(struct belayd_cause * const cse, struct json_object *cse_obj)
 {
 	struct json_object *args_obj, *days_obj, *day_obj;
 	struct days_of_the_week_opts *opts;
@@ -133,7 +133,7 @@ error:
 	return ret;
 }
 
-int days_of_the_week_main(struct cause * const cse, int time_since_last_run)
+int days_of_the_week_main(struct belayd_cause * const cse, int time_since_last_run)
 {
 	struct days_of_the_week_opts *opts = (struct days_of_the_week_opts *)cse->data;
 	struct tm *cur_tm;
@@ -193,14 +193,14 @@ int days_of_the_week_main(struct cause * const cse, int time_since_last_run)
 	return 0;
 }
 
-void days_of_the_week_exit(struct cause * const cse)
+void days_of_the_week_exit(struct belayd_cause * const cse)
 {
 	struct days_of_the_week_opts *opts = (struct days_of_the_week_opts *)cse->data;
 
 	free(opts);
 }
 
-void days_of_the_week_print(const struct cause * const cse, FILE *file)
+void days_of_the_week_print(const struct belayd_cause * const cse, FILE *file)
 {
 	const char * const days[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday",
 		"Friday", "Saturday"};

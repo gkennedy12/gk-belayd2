@@ -16,6 +16,8 @@
 #include <json-c/json.h>
 #include <stdio.h>
 
+#include <belayd.h>
+
 #include "defines.h"
 
 enum cause_enum {
@@ -25,41 +27,29 @@ enum cause_enum {
 	CAUSE_CNT
 };
 
-struct cause {
+struct belayd_cause {
 	/* populated by belayd */
 	enum cause_enum idx;
 	char *name;
-	const struct cause_functions *fns;
-	struct cause *next;
+	const struct belayd_cause_functions *fns;
+	struct belayd_cause *next;
 
 	/* private data store for each cause plugin */
 	void *data;
 };
 
-typedef int (*cause_init)(struct cause * const cse, struct json_object *cse_obj);
-typedef int (*cause_main)(struct cause * const cse, int time_since_last_run);
-typedef void (*cause_exit)(struct cause * const cse);
-typedef void (*cause_print)(const struct cause * const cse, FILE *file);
-
-struct cause_functions {
-	cause_init init;
-	cause_main main;
-	cause_exit exit;
-	cause_print print;	/* implementing the print() function is optional */
-};
-
 extern const char * const cause_names[];
-extern const struct cause_functions cause_fns[];
+extern const struct belayd_cause_functions cause_fns[];
 
 
-int time_of_day_init(struct cause * const cse, struct json_object *cse_obj);
-int time_of_day_main(struct cause * const cse, int time_since_last_run);
-void time_of_day_exit(struct cause * const cse);
-void time_of_day_print(const struct cause * const cse, FILE *file);
+int time_of_day_init(struct belayd_cause * const cse, struct json_object *cse_obj);
+int time_of_day_main(struct belayd_cause * const cse, int time_since_last_run);
+void time_of_day_exit(struct belayd_cause * const cse);
+void time_of_day_print(const struct belayd_cause * const cse, FILE *file);
 
-int days_of_the_week_init(struct cause * const cse, struct json_object *cse_obj);
-int days_of_the_week_main(struct cause * const cse, int time_since_last_run);
-void days_of_the_week_exit(struct cause * const cse);
-void days_of_the_week_print(const struct cause * const cse, FILE *file);
+int days_of_the_week_init(struct belayd_cause * const cse, struct json_object *cse_obj);
+int days_of_the_week_main(struct belayd_cause * const cse, int time_since_last_run);
+void days_of_the_week_exit(struct belayd_cause * const cse);
+void days_of_the_week_print(const struct belayd_cause * const cse, FILE *file);
 
 #endif /* __BELAYD_CAUSE_H */

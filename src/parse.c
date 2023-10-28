@@ -93,8 +93,8 @@ error:
 }
 static int parse_cause(struct rule * const rule, struct json_object * const cause_obj)
 {
+	struct belayd_cause *cse = NULL;
 	bool found_cause = false;
-	struct cause *cse = NULL;
 	const char *name;
 	int ret = 0;
 	int i;
@@ -103,13 +103,13 @@ static int parse_cause(struct rule * const rule, struct json_object * const caus
 	if (ret )
 		goto error;
 
-	cse = malloc(sizeof(struct cause));
+	cse = malloc(sizeof(struct belayd_cause));
 	if (!cse) {
 		ret = -ENOMEM;
 		goto error;
 	}
 
-	memset(cse, 0, sizeof(struct cause));
+	memset(cse, 0, sizeof(struct belayd_cause));
 
 	cse->name = malloc(strlen(name) + 1);
 	if (!cse->name) {

@@ -37,7 +37,7 @@ struct effect {
 };
 
 typedef int (*effect_init)(struct effect * const eff, struct json_object *eff_obj,
-			   const struct cause * const cse);
+			   const struct belayd_cause * const cse);
 typedef int (*effect_main)(struct effect * const eff);
 typedef void (*effect_exit)(struct effect * const eff);
 
@@ -52,12 +52,12 @@ extern const struct effect_functions effect_fns[];
 
 
 int print_init(struct effect * const eff, struct json_object *eff_obj,
-	       const struct cause * const cse);
+	       const struct belayd_cause * const cse);
 int print_main(struct effect * const eff);
 void print_exit(struct effect * const eff);
 
 int validate_init(struct effect * const eff, struct json_object *eff_obj,
-		  const struct cause * const cse);
+		  const struct belayd_cause * const cse);
 int validate_main(struct effect * const eff);
 void validate_exit(struct effect * const eff);
 

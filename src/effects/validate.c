@@ -27,7 +27,7 @@ struct validate_opts {
 };
 
 int validate_init(struct effect * const eff, struct json_object *eff_obj,
-	       const struct cause * const cse)
+	       const struct belayd_cause * const cse)
 {
 	struct json_object *args_obj;
 	struct validate_opts *opts;

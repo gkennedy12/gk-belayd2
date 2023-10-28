@@ -27,7 +27,7 @@ enum log_location {
 
 struct rule {
 	char *name;
-	struct cause *causes;
+	struct belayd_cause *causes;
 	struct effect *effects;
 
 	struct rule *next;

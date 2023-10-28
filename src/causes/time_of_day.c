@@ -36,7 +36,7 @@ struct time_of_day_opts {
 	struct tm time;
 };
 
-int time_of_day_init(struct cause * const cse, struct json_object *cse_obj)
+int time_of_day_init(struct belayd_cause * const cse, struct json_object *cse_obj)
 {
 	struct json_object *args_obj;
 	struct time_of_day_opts *opts;
@@ -119,7 +119,7 @@ error:
 	return ret;
 }
 
-int time_of_day_main(struct cause * const cse, int time_since_last_run)
+int time_of_day_main(struct belayd_cause * const cse, int time_since_last_run)
 {
 	struct time_of_day_opts *opts = (struct time_of_day_opts *)cse->data;
 	struct tm *cur_tm;
@@ -159,7 +159,7 @@ int time_of_day_main(struct cause * const cse, int time_since_last_run)
 	return ret;
 }
 
-void time_of_day_exit(struct cause * const cse)
+void time_of_day_exit(struct belayd_cause * const cse)
 {
 	struct time_of_day_opts *opts = (struct time_of_day_opts *)cse->data;
 
@@ -169,7 +169,7 @@ void time_of_day_exit(struct cause * const cse)
 	free(opts);
 }
 
-void time_of_day_print(const struct cause * const cse, FILE *file)
+void time_of_day_print(const struct belayd_cause * const cse, FILE *file)
 {
 	struct time_of_day_opts *opts = (struct time_of_day_opts *)cse->data;
 

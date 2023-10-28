@@ -25,11 +25,11 @@ enum file_enum {
 
 struct print_opts {
 	FILE *file;
-	const struct cause *cse;
+	const struct belayd_cause *cse;
 };
 
 int print_init(struct effect * const eff, struct json_object *eff_obj,
-	       const struct cause * const cse)
+	       const struct belayd_cause * const cse)
 {
 	struct json_object *args_obj;
 	struct print_opts *opts;
@@ -79,7 +79,7 @@ error:
 int print_main(struct effect * const eff)
 {
 	struct print_opts *opts = (struct print_opts *)eff->data;
-	const struct cause *cse;
+	const struct belayd_cause *cse;
 
 	fprintf(opts->file, "Print effect triggered by:\n");
 
