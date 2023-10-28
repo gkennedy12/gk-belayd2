@@ -40,6 +40,7 @@ struct belayd_cause {
 
 extern const char * const cause_names[];
 extern const struct belayd_cause_functions cause_fns[];
+extern struct belayd_cause *registered_causes;
 
 
 int time_of_day_init(struct belayd_cause * const cse, struct json_object *cse_obj);

@@ -60,6 +60,8 @@ static int _belayd_init(struct belayd_ctx * const ctx)
 	ctx->max_loops = 0;
 	ctx->rules = NULL;
 
+	cause_init();
+
 	return 0;
 }
 
@@ -234,6 +236,12 @@ void cleanup(struct belayd_ctx *ctx)
 		free(rule);
 		rule = rule_next;
 	}
+
+	/*
+	 * Now that the rules have been cleaned up, we can clean up the
+	 * registered causes.
+	 */
+	cause_cleanup();
 }
 
 int belayd_loop(struct belayd_ctx * const ctx)

@@ -44,6 +44,13 @@ struct belayd_ctx {
 };
 
 /*
+ * cause.c functions
+ */
+
+void cause_init(void);
+void cause_cleanup(void);
+
+/*
  * log.c functions
  */
 

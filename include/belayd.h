@@ -122,4 +122,26 @@ void belayd_release(struct belayd_ctx **ctx);
  */
 int belayd_loop(struct belayd_ctx * const ctx);
 
+/**
+ * Get the private data pointer in a cause structure
+ * @param cse Cause pointer
+ */
+void *belayd_cause_get_data(const struct belayd_cause * const cse);
+
+/**
+ * Set the private data pointer in a cause structure
+ * @param cse Cause pointer
+ * @param data Private data structure pointer
+ */
+int belayd_cause_set_data(struct belayd_cause * const cse, void * const data);
+
+/**
+ * Register a cause with belayd
+ * @param ctx belayd context
+ * @param name cause name
+ * @param fns cause function handlers
+ */
+int belayd_register_cause(struct belayd_ctx * const ctx, const char * const name,
+			  const struct belayd_cause_functions * const fns);
+
 #endif /* __BELAYD_H */

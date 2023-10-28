@@ -95,7 +95,7 @@ error:
 }
 static int parse_cause(struct belayd_rule * const rule, struct json_object * const cause_obj)
 {
-	struct belayd_cause *cse = NULL;
+	struct belayd_cause *cse = NULL, *reg_cse;
 	bool found_cause = false;
 	const char *name;
 	int ret = 0;
@@ -136,6 +136,35 @@ static int parse_cause(struct belayd_rule * const rule, struct json_object * con
 				goto error;
 
 			break;
+		}
+	}
+
+	if (!found_cause) {
+		/*
+		 * We didn't find the cause in the built-in causes.  Now search the
+		 * registered causes
+		 */
+		reg_cse = registered_causes;
+
+		while (reg_cse) {
+			if (strncmp(name, reg_cse->name, strlen(reg_cse->name)) == 0) {
+				found_cause = true;
+				memcpy(cse, reg_cse, sizeof(struct belayd_cause));
+				cse->name = strdup(reg_cse->name);
+				if (!cse->name) {
+					ret = -ENOMEM;
+					goto error;
+				}
+
+				belayd_dbg("Initializing cause %s\n", cse->name);
+				ret = (*cse->fns->init)(cse, cause_obj);
+				if (ret)
+					goto error;
+
+				break;
+			}
+
+			reg_cse = reg_cse->next;
 		}
 	}
 

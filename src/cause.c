@@ -11,6 +11,10 @@
  */
 
 #include <assert.h>
+#include <string.h>
+#include <errno.h>
+
+#include <belayd.h>
 
 #include "defines.h"
 #include "cause.h"
@@ -29,3 +33,96 @@ const struct belayd_cause_functions cause_fns[] = {
 };
 static_assert(ARRAY_SIZE(cause_fns) == CAUSE_CNT,
 	      "cause_fns[] must be same length as CAUSE_CNT");
+
+/*
+ * Re-use the belayd_cause structure to store a linked list of causes that have been
+ * added at runtime by the user.  When processing causes, the ->next field is used to
+ * chain multiple causes together for one rule (e.g. notify me when it's after 5pm and
+ * it's Friday).  In the registered_causes case, the ->next field simply points to the
+ * next registered cause that's been added by the user
+ */
+struct belayd_cause *registered_causes;
+
+int belayd_register_cause(struct belayd_ctx * const ctx, const char * const name,
+			  const struct belayd_cause_functions * const fns)
+{
+	struct belayd_cause *cse = NULL;
+	int ret = 0;
+
+	if (!ctx)
+		return -EINVAL;
+	if (!name)
+		return -EINVAL;
+	if (!fns)
+		return -EINVAL;
+	if (!fns->init || !fns->main || !fns->exit)
+		return -EINVAL;
+
+	cse = malloc(sizeof(struct belayd_cause));
+	if (!cse)
+		return -ENOMEM;
+
+	memset(cse, 0, sizeof(struct belayd_cause));
+
+	cse->name = strdup(name);
+	if (!cse->name) {
+		ret = -ENOMEM;
+		goto err;
+	}
+
+	/*
+	 * The index is saved off for debugging and convenience.  Since this is a registered
+	 * cause, it doesn't have an index into the enum causes enumeration.
+	 */
+	cse->idx = -1;
+	cse->fns = fns;
+	cse->next = NULL;
+
+	if (!registered_causes)
+		/*
+		 * This is the first cause in the registered linked list
+		 */
+		registered_causes = cse;
+	else
+		registered_causes->next = cse;
+
+	return ret;
+
+err:
+	if (cse && cse->name)
+		free(cse->name);
+	if (cse)
+		free(cse);
+	return ret;
+}
+
+void *belayd_cause_get_data(const struct belayd_cause * const cse)
+{
+	return cse->data;
+}
+
+int belayd_cause_set_data(struct belayd_cause * const cse, void * const data)
+{
+	cse->data = data;
+	return 0;
+}
+
+void cause_init(void)
+{
+	registered_causes = NULL;
+}
+
+void cause_cleanup(void)
+{
+	struct belayd_cause *next, *cur;
+
+	cur = registered_causes;
+
+	while (cur) {
+		next = cur->next;
+		free(cur->name);
+		free(cur);
+
+		cur = next;
+	}
+}
