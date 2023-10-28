@@ -26,7 +26,7 @@ struct validate_opts {
 	int	ret;
 };
 
-int validate_init(struct effect * const eff, struct json_object *eff_obj,
+int validate_init(struct belayd_effect * const eff, struct json_object *eff_obj,
 	       const struct belayd_cause * const cse)
 {
 	struct json_object *args_obj;
@@ -63,7 +63,7 @@ error:
 	return ret;
 }
 
-int validate_main(struct effect * const eff)
+int validate_main(struct belayd_effect * const eff)
 {
 	struct validate_opts *opts = (struct validate_opts *)eff->data;
 
@@ -71,7 +71,7 @@ int validate_main(struct effect * const eff)
 	return -opts->ret;
 }
 
-void validate_exit(struct effect * const eff)
+void validate_exit(struct belayd_effect * const eff)
 {
 	struct validate_opts *opts = (struct validate_opts *)eff->data;
 

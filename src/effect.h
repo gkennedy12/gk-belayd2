@@ -25,40 +25,29 @@ enum effect_enum {
 	EFFECT_CNT
 };
 
-struct effect {
+struct belayd_effect {
 	/* populated by belayd */
 	enum effect_enum idx;
 	char *name;
-	const struct effect_functions *fns;
-	struct effect *next;
+	const struct belayd_effect_functions *fns;
+	struct belayd_effect *next;
 
 	/* private data store for each effect plugin */
 	void *data;
 };
 
-typedef int (*effect_init)(struct effect * const eff, struct json_object *eff_obj,
-			   const struct belayd_cause * const cse);
-typedef int (*effect_main)(struct effect * const eff);
-typedef void (*effect_exit)(struct effect * const eff);
-
-struct effect_functions {
-	effect_init init;
-	effect_main main;
-	effect_exit exit;
-};
-
 extern const char * const effect_names[];
-extern const struct effect_functions effect_fns[];
+extern const struct belayd_effect_functions effect_fns[];
 
 
-int print_init(struct effect * const eff, struct json_object *eff_obj,
+int print_init(struct belayd_effect * const eff, struct json_object *eff_obj,
 	       const struct belayd_cause * const cse);
-int print_main(struct effect * const eff);
-void print_exit(struct effect * const eff);
+int print_main(struct belayd_effect * const eff);
+void print_exit(struct belayd_effect * const eff);
 
-int validate_init(struct effect * const eff, struct json_object *eff_obj,
+int validate_init(struct belayd_effect * const eff, struct json_object *eff_obj,
 		  const struct belayd_cause * const cse);
-int validate_main(struct effect * const eff);
-void validate_exit(struct effect * const eff);
+int validate_main(struct belayd_effect * const eff);
+void validate_exit(struct belayd_effect * const eff);
 
 #endif /* __BELAYD_EFFECT_H */

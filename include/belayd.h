@@ -22,6 +22,11 @@ struct rule;
  */
 struct belayd_cause;
 
+/*
+ * Opaque structure that contains effect information
+ */
+struct belayd_effect;
+
 /**
  * belayd configuration options
  */
@@ -75,6 +80,34 @@ struct belayd_cause_functions {
 	belayd_cause_main main;
 	belayd_cause_exit exit;
 	belayd_cause_print print;	/* implementing the print() function is optional */
+};
+
+/**
+ * Initialization routine for an effect
+ * @param eff Effect structure for this effect
+ * @param eff_obj JSON object representation of this effect
+ * @param cse Cause structure this effect is acting upon
+ */
+typedef int (*belayd_effect_init)(struct belayd_effect * const eff, struct json_object *eff_obj,
+			   const struct belayd_cause * const cse);
+/**
+ * Main processing logic for an effect
+ * @param eff Effect structure for this effect
+ */
+typedef int (*belayd_effect_main)(struct belayd_effect * const eff);
+/**
+ * Exit routine for an effect
+ * @param eff Effect structure for this effect
+ */
+typedef void (*belayd_effect_exit)(struct belayd_effect * const eff);
+
+/**
+ * Effect functions structure
+ */
+struct belayd_effect_functions {
+	belayd_effect_init init;
+	belayd_effect_main main;
+	belayd_effect_exit exit;
 };
 
 /**

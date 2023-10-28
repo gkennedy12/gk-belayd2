@@ -22,7 +22,7 @@ const char * const effect_names[] = {
 static_assert(ARRAY_SIZE(effect_names) == EFFECT_CNT,
 	      "effect_names[] must be same length as EFFECT_CNT");
 
-const struct effect_functions effect_fns[] = {
+const struct belayd_effect_functions effect_fns[] = {
 	{print_init, print_main, print_exit},
 	{validate_init, validate_main, validate_exit},
 };

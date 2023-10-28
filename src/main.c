@@ -143,9 +143,9 @@ err:
 
 void cleanup(struct belayd_opts *opts)
 {
+	struct belayd_effect *eff, *eff_next;
 	struct belayd_cause *cse, *cse_next;
 	struct rule *rule, *rule_next;
-	struct effect *eff, *eff_next;
 
 	rule = opts->rules;
 
@@ -187,9 +187,9 @@ void cleanup(struct belayd_opts *opts)
 
 int belayd_loop(struct belayd_opts * const opts)
 {
+	struct belayd_effect *eff;
 	struct belayd_cause *cse;
 	unsigned int loop_cnt;
-	struct effect *eff;
 	struct rule *rule;
 	int ret = 0;
 

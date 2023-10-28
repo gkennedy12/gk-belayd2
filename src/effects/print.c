@@ -28,7 +28,7 @@ struct print_opts {
 	const struct belayd_cause *cse;
 };
 
-int print_init(struct effect * const eff, struct json_object *eff_obj,
+int print_init(struct belayd_effect * const eff, struct json_object *eff_obj,
 	       const struct belayd_cause * const cse)
 {
 	struct json_object *args_obj;
@@ -76,7 +76,7 @@ error:
 	return ret;
 }
 
-int print_main(struct effect * const eff)
+int print_main(struct belayd_effect * const eff)
 {
 	struct print_opts *opts = (struct print_opts *)eff->data;
 	const struct belayd_cause *cse;
@@ -96,7 +96,7 @@ int print_main(struct effect * const eff)
 	return 0;
 }
 
-void print_exit(struct effect * const eff)
+void print_exit(struct belayd_effect * const eff)
 {
 	struct print_opts *opts = (struct print_opts *)eff->data;
 

@@ -12,6 +12,8 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <belayd.h>
+
 #include "belayd-internal.h"
 #include "effect.h"
 #include "cause.h"
@@ -166,8 +168,8 @@ error:
 
 static int parse_effect(struct rule * const rule, struct json_object * const effect_obj)
 {
+	struct belayd_effect *eff = NULL;
 	bool found_effect = false;
-	struct effect *eff = NULL;
 	const char *name;
 	int ret = 0;
 	int i;
@@ -176,13 +178,13 @@ static int parse_effect(struct rule * const rule, struct json_object * const eff
 	if (ret )
 		goto error;
 
-	eff = malloc(sizeof(struct effect));
+	eff = malloc(sizeof(struct belayd_effect));
 	if (!eff) {
 		ret = -ENOMEM;
 		goto error;
 	}
 
-	memset(eff, 0, sizeof(struct effect));
+	memset(eff, 0, sizeof(struct belayd_effect));
 
 	eff->name = malloc(strlen(name) + 1);
 	if (!eff->name) {
