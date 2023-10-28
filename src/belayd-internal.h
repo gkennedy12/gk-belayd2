@@ -12,6 +12,8 @@
 #include <syslog.h>
 #include <stdio.h>
 
+#include <belayd.h>
+
 #include "cause.h"
 #include "effect.h"
 
@@ -29,16 +31,6 @@ struct rule {
 	struct effect *effects;
 
 	struct rule *next;
-};
-
-struct belayd_opts {
-	/* options passed in on the command line */
-	char config[FILENAME_MAX];
-	int interval;
-	int max_loops;
-
-	/* internal settings and structures */
-	struct rule *rules;
 };
 
 /*

@@ -15,6 +15,8 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include <belayd.h>
+
 #include "belayd-internal.h"
 #include "defines.h"
 
@@ -183,34 +185,29 @@ void cleanup(struct belayd_opts *opts)
 	}
 }
 
-int main(int argc, char *argv[])
+int belayd_loop(struct belayd_opts * const opts)
 {
-	struct belayd_opts opts;
 	unsigned int loop_cnt;
 	struct effect *eff;
 	struct cause *cse;
 	struct rule *rule;
-	int ret;
+	int ret = 0;
 
-	ret = parse_opts(argc, argv, &opts);
-	if (ret)
-		goto out;
-
-	ret = parse_config(&opts);
+	ret = parse_config(opts);
 	if (ret)
 		goto out;
 
 	loop_cnt = 0;
 
 	while (1) {
-		rule = opts.rules;
+		rule = opts->rules;
 
 		while (rule) {
 			belayd_dbg("Running rule %s\n", rule->name);
 			cse = rule->causes;
 
 			while (cse) {
-				ret = (*cse->fns->main)(cse, opts.interval);
+				ret = (*cse->fns->main)(cse, opts->interval);
 				if (ret < 0) {
 					belayd_dbg("%s raised error %d\n", cse->name, ret);
 					goto out;
@@ -256,13 +253,30 @@ int main(int argc, char *argv[])
 		}
 
 		loop_cnt++;
-		if (opts.max_loops > 0 && loop_cnt > opts.max_loops) {
+		if (opts->max_loops > 0 && loop_cnt > opts->max_loops) {
 			ret = -ETIME;
 			break;
 		}
 
-		sleep(opts.interval);
+		sleep(opts->interval);
 	}
+
+out:
+	return ret;
+}
+
+int main(int argc, char *argv[])
+{
+	struct belayd_opts opts;
+	int ret;
+
+	ret = parse_opts(argc, argv, &opts);
+	if (ret)
+		goto out;
+
+	ret = belayd_loop(&opts);
+	if (ret)
+		goto out;
 
 out:
 	cleanup(&opts);
