@@ -49,7 +49,7 @@ int print_init(struct belayd_effect * const eff, struct json_object *eff_obj,
 		goto error;
 	}
 
-	ret = parse_string(args_obj, "file", &file_str);
+	ret = belayd_parse_string(args_obj, "file", &file_str);
 	if (ret)
 		goto error;
 

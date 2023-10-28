@@ -39,7 +39,7 @@ static int get_file_size(FILE * const fd, long * const file_size)
 	return ret;
 }
 
-int parse_string(struct json_object * const obj, const char * const key, const char **value)
+int belayd_parse_string(struct json_object * const obj, const char * const key, const char **value)
 {
 	struct json_object *key_obj;
 	json_bool exists;
@@ -70,7 +70,7 @@ error:
 	return ret;
 }
 
-int parse_int(struct json_object * const obj, const char * const key, int * const value)
+int belayd_parse_int(struct json_object * const obj, const char * const key, int * const value)
 {
 	const char *str_value;
 	int ret = 0;
@@ -80,7 +80,7 @@ int parse_int(struct json_object * const obj, const char * const key, int * cons
 		goto error;
 	}
 
-	ret = parse_string(obj, key, &str_value);
+	ret = belayd_parse_string(obj, key, &str_value);
 	if (ret)
 		goto error;
 
@@ -101,7 +101,7 @@ static int parse_cause(struct belayd_rule * const rule, struct json_object * con
 	int ret = 0;
 	int i;
 
-	ret = parse_string(cause_obj, "name", &name);
+	ret = belayd_parse_string(cause_obj, "name", &name);
 	if (ret )
 		goto error;
 
@@ -203,7 +203,7 @@ static int parse_effect(struct belayd_rule * const rule, struct json_object * co
 	int ret = 0;
 	int i;
 
-	ret = parse_string(effect_obj, "name", &name);
+	ret = belayd_parse_string(effect_obj, "name", &name);
 	if (ret )
 		goto error;
 
@@ -277,7 +277,7 @@ static int parse_rule(struct belayd_ctx * const ctx, struct json_object * const 
 	const char *name;
 	int ret = 0;
 
-	ret = parse_string(rule_obj, "name", &name);
+	ret = belayd_parse_string(rule_obj, "name", &name);
 	if (ret )
 		goto error;
 

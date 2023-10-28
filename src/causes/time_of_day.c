@@ -62,7 +62,7 @@ int time_of_day_init(struct belayd_cause * const cse, struct json_object *cse_ob
 		goto error;
 	}
 
-	ret = parse_string(args_obj, "time", &time_str);
+	ret = belayd_parse_string(args_obj, "time", &time_str);
 	if (ret)
 		goto error;
 
@@ -86,7 +86,7 @@ int time_of_day_init(struct belayd_cause * const cse, struct json_object *cse_ob
 
 	memcpy(&opts->time, &time, sizeof(struct tm));
 
-	ret = parse_string(args_obj, "operator", &op_str);
+	ret = belayd_parse_string(args_obj, "operator", &op_str);
 	if (ret)
 		goto error;
 

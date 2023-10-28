@@ -112,7 +112,7 @@ int days_of_the_week_init(struct belayd_cause * const cse, struct json_object *c
 			goto error;
 		}
 
-		ret = parse_string(day_obj, "day", &day_str);
+		ret = belayd_parse_string(day_obj, "day", &day_str);
 		if (ret)
 			goto error;
 

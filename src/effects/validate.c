@@ -47,7 +47,7 @@ int validate_init(struct belayd_effect * const eff, struct json_object *eff_obj,
 		goto error;
 	}
 
-	ret = parse_int(args_obj, "return_value", &opts->ret);
+	ret = belayd_parse_int(args_obj, "return_value", &opts->ret);
 	if (ret)
 		goto error;
 

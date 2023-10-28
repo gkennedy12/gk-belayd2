@@ -171,4 +171,20 @@ int belayd_cause_set_data(struct belayd_cause * const cse, void * const data);
 int belayd_register_cause(struct belayd_ctx * const ctx, const char * const name,
 			  const struct belayd_cause_functions * const fns);
 
+/**
+ * Parse a string from the JSON configuration file
+ * @param obj JSON object
+ * @param key JSON object key
+ * @param value pointer that on success will point at the requested string
+ */
+int belayd_parse_string(struct json_object * const obj, const char * const key, const char **value);
+
+/**
+ * Parse an integer from the JSON configuration file
+ * @param obj JSON object
+ * @param key JSON object key
+ * @param value destination to store the integer value
+ */
+int belayd_parse_int(struct json_object * const obj, const char * const key, int * const value);
+
 #endif /* __BELAYD_H */
