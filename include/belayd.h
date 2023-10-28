@@ -111,6 +111,25 @@ struct belayd_effect_functions {
 };
 
 /**
+ * Initialize the belayd options structure
+ * @param config_file Path to the configuration file to be used
+ *
+ * @return pointer to valid belayd options.  NULL on failure
+ *
+ * If config file is NULL, belayd will use the default config file,
+ * /etc/belayd.json
+ */
+struct belayd_opts *belayd_init(const char * const config_file);
+
+/**
+ * Destroy the belayd context and release any resources
+ * @param opts belayd options struct
+ *
+ * (*opts) will be NULLed if it is a valid opts pointer
+ */
+void belayd_release(struct belayd_opts **opts);
+
+/**
  * Main belayd processing loop
  * @param opts the belayd configuration options
  */

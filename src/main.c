@@ -20,6 +20,8 @@
 #include "belayd-internal.h"
 #include "defines.h"
 
+void cleanup(struct belayd_opts *opts);
+
 static const char * const log_files[] = {
 	"syslog",
 	"stdout",
@@ -47,6 +49,56 @@ static void usage(FILE *fd)
 						 "Useful for testing\n");
 }
 
+static int _belayd_init(struct belayd_opts * const opts)
+{
+	if (!opts)
+		return -EINVAL;
+
+	memset(opts, 0, sizeof(struct belayd_opts));
+
+	opts->interval = default_interval;
+	opts->max_loops = 0;
+	opts->rules = NULL;
+
+	return 0;
+}
+
+struct belayd_opts *belayd_init(const char * const config_file)
+{
+	struct belayd_opts *opts = NULL;
+	int ret;
+
+	opts = malloc(sizeof(struct belayd_opts));
+	if (!opts)
+		return NULL;
+
+	ret = _belayd_init(opts);
+	if (ret)
+		goto err;
+
+	if (config_file)
+		strncpy(opts->config, config_file, FILENAME_MAX - 1);
+	else
+		strncpy(opts->config, default_config_file, FILENAME_MAX - 1);
+
+	return opts;
+err:
+	if (opts)
+		free(opts);
+
+	return NULL;
+}
+
+void belayd_release(struct belayd_opts **opts)
+{
+	cleanup(*opts);
+
+	if (*opts)
+		free(*opts);
+
+	(*opts) = NULL;
+}
+
 int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 {
 	struct option long_options[] = {
@@ -64,10 +116,9 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 	int tmp_level;
 	bool found;
 
-	memset(opts, 0, sizeof(struct belayd_opts));
-	strncpy(opts->config, default_config_file, FILENAME_MAX - 1);
-	opts->interval = default_interval;
-	opts->max_loops = 0;
+	ret = _belayd_init(opts);
+	if (ret)
+		goto err;
 
 	while (1) {
 		int c;
