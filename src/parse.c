@@ -95,7 +95,7 @@ error:
 }
 static int parse_cause(struct belayd_rule * const rule, struct json_object * const cause_obj)
 {
-	struct belayd_cause *cse = NULL, *reg_cse;
+	struct belayd_cause *cse = NULL, *reg_cse, *tmp_cse;
 	bool found_cause = false;
 	const char *name;
 	int ret = 0;
@@ -178,10 +178,15 @@ static int parse_cause(struct belayd_rule * const rule, struct json_object * con
 	 * do not goto error after this point.  we have added the cse
 	 * to the causes linked list
 	 */
-	if (!rule->causes)
+	if (!rule->causes) {
 		rule->causes = cse;
-	else
-		rule->causes->next = cse;
+	} else {
+		tmp_cse = rule->causes;
+
+		while (tmp_cse->next)
+			tmp_cse = tmp_cse->next;
+		tmp_cse->next = cse;
+	}
 
 	return ret;
 
@@ -197,7 +202,7 @@ error:
 
 static int parse_effect(struct belayd_rule * const rule, struct json_object * const effect_obj)
 {
-	struct belayd_effect *eff = NULL;
+	struct belayd_effect *eff = NULL, *tmp_eff;
 	bool found_effect = false;
 	const char *name;
 	int ret = 0;
@@ -251,10 +256,15 @@ static int parse_effect(struct belayd_rule * const rule, struct json_object * co
 	 * do not goto error after this point.  we have added the eff
 	 * to the effects linked list
 	 */
-	if (!rule->effects)
+	if (!rule->effects) {
 		rule->effects = eff;
-	else
-		rule->effects->next = eff;
+	} else {
+		tmp_eff = rule->effects;
+
+		while (tmp_eff->next)
+			tmp_eff = tmp_eff->next;
+		tmp_eff->next = eff;
+	}
 
 	return ret;
 
