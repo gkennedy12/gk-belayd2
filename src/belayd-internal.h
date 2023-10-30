@@ -33,6 +33,16 @@ struct rule {
 	struct rule *next;
 };
 
+struct belayd_ctx {
+	/* options passed in on the command line */
+	char config[FILENAME_MAX];
+	int interval; /* in seconds */
+	int max_loops;
+
+	/* internal settings and structures */
+	struct rule *rules;
+};
+
 /*
  * log.c functions
  */
@@ -64,6 +74,6 @@ void belayd_log(int priority, const char *fmt, ...);
 
 int parse_string(struct json_object * const obj, const char * const key, const char **value);
 int parse_int(struct json_object * const obj, const char * const key, int * const value);
-int parse_config(struct belayd_opts * const opts);
+int parse_config(struct belayd_ctx * const ctx);
 
 #endif /* __BELAYD_INTERNAL_H */

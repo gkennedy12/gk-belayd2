@@ -20,7 +20,7 @@
 #include "belayd-internal.h"
 #include "defines.h"
 
-void cleanup(struct belayd_opts *opts);
+void cleanup(struct belayd_ctx *ctx);
 
 static const char * const log_files[] = {
 	"syslog",
@@ -49,57 +49,57 @@ static void usage(FILE *fd)
 						 "Useful for testing\n");
 }
 
-static int _belayd_init(struct belayd_opts * const opts)
+static int _belayd_init(struct belayd_ctx * const ctx)
 {
-	if (!opts)
+	if (!ctx)
 		return -EINVAL;
 
-	memset(opts, 0, sizeof(struct belayd_opts));
+	memset(ctx, 0, sizeof(struct belayd_ctx));
 
-	opts->interval = default_interval;
-	opts->max_loops = 0;
-	opts->rules = NULL;
+	ctx->interval = default_interval;
+	ctx->max_loops = 0;
+	ctx->rules = NULL;
 
 	return 0;
 }
 
-struct belayd_opts *belayd_init(const char * const config_file)
+struct belayd_ctx *belayd_init(const char * const config_file)
 {
-	struct belayd_opts *opts = NULL;
+	struct belayd_ctx *ctx = NULL;
 	int ret;
 
-	opts = malloc(sizeof(struct belayd_opts));
-	if (!opts)
+	ctx = malloc(sizeof(struct belayd_ctx));
+	if (!ctx)
 		return NULL;
 
-	ret = _belayd_init(opts);
+	ret = _belayd_init(ctx);
 	if (ret)
 		goto err;
 
 	if (config_file)
-		strncpy(opts->config, config_file, FILENAME_MAX - 1);
+		strncpy(ctx->config, config_file, FILENAME_MAX - 1);
 	else
-		strncpy(opts->config, default_config_file, FILENAME_MAX - 1);
+		strncpy(ctx->config, default_config_file, FILENAME_MAX - 1);
 
-	return opts;
+	return ctx;
 err:
-	if (opts)
-		free(opts);
+	if (ctx)
+		free(ctx);
 
 	return NULL;
 }
 
-void belayd_release(struct belayd_opts **opts)
+void belayd_release(struct belayd_ctx **ctx)
 {
-	cleanup(*opts);
+	cleanup(*ctx);
 
-	if (*opts)
-		free(*opts);
+	if (*ctx)
+		free(*ctx);
 
-	(*opts) = NULL;
+	(*ctx) = NULL;
 }
 
-int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
+int parse_opts(int argc, char *argv[], struct belayd_ctx * const ctx)
 {
 	struct option long_options[] = {
 		{"help",		no_argument, NULL, 'h'},
@@ -116,7 +116,7 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 	int tmp_level;
 	bool found;
 
-	ret = _belayd_init(opts);
+	ret = _belayd_init(ctx);
 	if (ret)
 		goto err;
 
@@ -129,15 +129,15 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 
 		switch (c) {
 		case 'c':
-			strncpy(opts->config, optarg, FILENAME_MAX - 1);
-			opts->config[FILENAME_MAX - 1] = '\0';
+			strncpy(ctx->config, optarg, FILENAME_MAX - 1);
+			ctx->config[FILENAME_MAX - 1] = '\0';
 			break;
 		case 'h':
 			usage(stdout);
 			exit(0);
 		case 'i':
-			opts->interval = atoi(optarg);
-			if (opts->interval < 1) {
+			ctx->interval = atoi(optarg);
+			if (ctx->interval < 1) {
 				belayd_err("Invalid interval: %s\n", optarg);
 				ret = 1;
 				goto err;
@@ -171,8 +171,8 @@ int parse_opts(int argc, char *argv[], struct belayd_opts * const opts)
 			}
 			break;
 		case 'm':
-			opts->max_loops = atoi(optarg);
-			if (opts->max_loops < 1) {
+			ctx->max_loops = atoi(optarg);
+			if (ctx->max_loops < 1) {
 				belayd_err("Invalid maxloops: %s\n", optarg);
 				ret = 1;
 				goto err;
@@ -192,13 +192,13 @@ err:
 	return ret;
 }
 
-void cleanup(struct belayd_opts *opts)
+void cleanup(struct belayd_ctx *ctx)
 {
 	struct belayd_effect *eff, *eff_next;
 	struct belayd_cause *cse, *cse_next;
 	struct rule *rule, *rule_next;
 
-	rule = opts->rules;
+	rule = ctx->rules;
 
 	while (rule) {
 		belayd_dbg("Cleaning up rule %s\n", rule->name);
@@ -236,7 +236,7 @@ void cleanup(struct belayd_opts *opts)
 	}
 }
 
-int belayd_loop(struct belayd_opts * const opts)
+int belayd_loop(struct belayd_ctx * const ctx)
 {
 	struct belayd_effect *eff;
 	struct belayd_cause *cse;
@@ -244,21 +244,21 @@ int belayd_loop(struct belayd_opts * const opts)
 	struct rule *rule;
 	int ret = 0;
 
-	ret = parse_config(opts);
+	ret = parse_config(ctx);
 	if (ret)
 		goto out;
 
 	loop_cnt = 0;
 
 	while (1) {
-		rule = opts->rules;
+		rule = ctx->rules;
 
 		while (rule) {
 			belayd_dbg("Running rule %s\n", rule->name);
 			cse = rule->causes;
 
 			while (cse) {
-				ret = (*cse->fns->main)(cse, opts->interval);
+				ret = (*cse->fns->main)(cse, ctx->interval);
 				if (ret < 0) {
 					belayd_dbg("%s raised error %d\n", cse->name, ret);
 					goto out;
@@ -304,12 +304,12 @@ int belayd_loop(struct belayd_opts * const opts)
 		}
 
 		loop_cnt++;
-		if (opts->max_loops > 0 && loop_cnt > opts->max_loops) {
+		if (ctx->max_loops > 0 && loop_cnt > ctx->max_loops) {
 			ret = -ETIME;
 			break;
 		}
 
-		sleep(opts->interval);
+		sleep(ctx->interval);
 	}
 
 out:
@@ -318,19 +318,19 @@ out:
 
 int main(int argc, char *argv[])
 {
-	struct belayd_opts opts;
+	struct belayd_ctx ctx;
 	int ret;
 
-	ret = parse_opts(argc, argv, &opts);
+	ret = parse_opts(argc, argv, &ctx);
 	if (ret)
 		goto out;
 
-	ret = belayd_loop(&opts);
+	ret = belayd_loop(&ctx);
 	if (ret)
 		goto out;
 
 out:
-	cleanup(&opts);
+	cleanup(&ctx);
 
 	return -ret;
 }

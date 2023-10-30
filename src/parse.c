@@ -239,7 +239,7 @@ error:
 	return ret;
 }
 
-static int parse_rule(struct belayd_opts * const opts, struct json_object * const rule_obj)
+static int parse_rule(struct belayd_ctx * const ctx, struct json_object * const rule_obj)
 {
 	struct json_object *causes_obj, *cause_obj, *effects_obj, *effect_obj;
 	int i, cause_cnt, effect_cnt;
@@ -321,10 +321,10 @@ static int parse_rule(struct belayd_opts * const opts, struct json_object * cons
 	 * do not goto error after this point.  we have added the rule
 	 * to the rules linked list
 	 */
-	if (!opts->rules)
-		opts->rules = rule;
+	if (!ctx->rules)
+		ctx->rules = rule;
 	else
-		opts->rules->next = rule;
+		ctx->rules->next = rule;
 
 	return ret;
 
@@ -338,7 +338,7 @@ error:
 	return ret;
 }
 
-static int parse_json(struct belayd_opts * const opts, const char * const buf)
+static int parse_json(struct belayd_ctx * const ctx, const char * const buf)
 {
 	struct json_object *obj, *rules_obj, *rule_obj;
 	enum json_tokener_error err;
@@ -369,7 +369,7 @@ static int parse_json(struct belayd_opts * const opts, const char * const buf)
 			goto out;
 		}
 
-		ret = parse_rule(opts, rule_obj);
+		ret = parse_rule(ctx, rule_obj);
 		if (ret)
 			goto out;
 	}
@@ -378,7 +378,7 @@ out:
 	return ret;
 }
 
-int parse_config(struct belayd_opts * const opts)
+int parse_config(struct belayd_ctx * const ctx)
 {
 	FILE *config_fd = NULL;
 	long config_size = 0;
@@ -386,9 +386,9 @@ int parse_config(struct belayd_opts * const opts)
 	char *buf = NULL;
 	int ret;
 
-	config_fd = fopen(opts->config, "r");
+	config_fd = fopen(ctx->config, "r");
 	if (!config_fd) {
-		belayd_err("Failed to fopen %s\n", opts->config);
+		belayd_err("Failed to fopen %s\n", ctx->config);
 		ret = -errno;
 		goto out;
 	}
@@ -412,7 +412,7 @@ int parse_config(struct belayd_opts * const opts)
 	}
 	buf[config_size] = '\0';
 
-	ret = parse_json(opts, buf);
+	ret = parse_json(ctx, buf);
 	if (ret)
 		goto out;
 

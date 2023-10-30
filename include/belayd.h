@@ -28,17 +28,9 @@ struct belayd_cause;
 struct belayd_effect;
 
 /**
- * belayd configuration options
+ * Opaque structure that contains the belayd context
  */
-struct belayd_opts {
-	/* options passed in on the command line */
-	char config[FILENAME_MAX];
-	int interval; /* in seconds */
-	int max_loops;
-
-	/* internal settings and structures */
-	struct rule *rules;
-};
+struct belayd_ctx;
 
 /**
  * Initialization routine for a cause
@@ -52,7 +44,7 @@ typedef int (*belayd_cause_init)(struct belayd_cause * const cse, struct json_ob
  * @param cse Cause structure for this cause
  * @param time_since_last_run Delta time since this cause last ran
  *
- * Note that currently the belayd_loop() passes in opts->interval in the time_since_last_run
+ * Note that currently the belayd_loop() passes in ctx->interval in the time_since_last_run
  * field.  In the future it could track the actual delta time between runs
  */
 typedef int (*belayd_cause_main)(struct belayd_cause * const cse, int time_since_last_run);
@@ -111,28 +103,28 @@ struct belayd_effect_functions {
 };
 
 /**
- * Initialize the belayd options structure
+ * Initialize the belayd context structure
  * @param config_file Path to the configuration file to be used
  *
- * @return pointer to valid belayd options.  NULL on failure
+ * @return pointer to valid belayd context.  NULL on failure
  *
  * If config file is NULL, belayd will use the default config file,
  * /etc/belayd.json
  */
-struct belayd_opts *belayd_init(const char * const config_file);
+struct belayd_ctx *belayd_init(const char * const config_file);
 
 /**
  * Destroy the belayd context and release any resources
- * @param opts belayd options struct
+ * @param ctx belayd context struct
  *
- * (*opts) will be NULLed if it is a valid opts pointer
+ * (*ctx) will be NULLed if it is a valid ctx pointer
  */
-void belayd_release(struct belayd_opts **opts);
+void belayd_release(struct belayd_ctx **ctx);
 
 /**
  * Main belayd processing loop
- * @param opts the belayd configuration options
+ * @param ctx the belayd configuration context
  */
-int belayd_loop(struct belayd_opts * const opts);
+int belayd_loop(struct belayd_ctx * const ctx);
 
 #endif /* __BELAYD_H */
