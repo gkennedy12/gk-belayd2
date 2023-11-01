@@ -17,16 +17,23 @@ EXTRA_DIST_PYTHON_FILES = \
 	utils.py
 
 check_PROGRAMS = \
-	002-register_cause
+	002-register_cause \
+	003-register_plugin_cause
 
 LDADD = -ljson-c ${top_builddir}/src/libbelayd.la
+
+003_register_plugin_cause_CFLAGS = -I${top_srcdir}/src/plugins/causes
+003_register_plugin_cause_SOURCES = \
+	003-register_plugin_cause.c \
+	${top_srcdir}/src/plugins/causes/time_of_day.c
 
 EXTRA_DIST_PYTHON_TESTS = \
 	001-cause-time_of_day.py
 
 EXTRA_DIST_CFGS = \
 	001-cause-time_of_day.json.token \
-	002-register_cause.json
+	002-register_cause.json \
+	003-register_plugin_cause.json
 
 EXTRA_DIST = \
 	ftests-wrapper.sh \

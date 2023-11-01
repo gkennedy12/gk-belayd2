@@ -1,0 +1,3 @@
+@CODE_COVERAGE_RULES@
+
+DIST_SUBDIRS = causes

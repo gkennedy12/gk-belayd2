@@ -68,6 +68,8 @@ AC_CONFIG_FILES([
 	doc/examples/Makefile
 	include/Makefile
 	src/Makefile
+	src/plugins/Makefile
+	src/plugins/causes/Makefile
 	tests/Makefile
 ])
 

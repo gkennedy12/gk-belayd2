@@ -1,5 +1,7 @@
 @CODE_COVERAGE_RULES@
 
+DIST_SUBDIRS = plugins
+
 SOURCES = \
 	belayd-internal.h \
 	causes/days_of_the_week.c \
