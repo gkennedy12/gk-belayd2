@@ -1,3 +1,3 @@
 @CODE_COVERAGE_RULES@
 
-DIST_SUBDIRS = causes
+DIST_SUBDIRS = causes utils

@@ -1,0 +1,28 @@
+{
+	"rules": [
+		{
+			"name": "pressure test.  Should trip",
+			"causes": [
+				{
+					"name": "pressure",
+					"args": {
+						"pressure_slice": "machine",
+						"threshold": "7",
+						"duration": "3",
+						"operator": "greaterthan",
+						"test": "1",
+						"verbose": "1"
+					}
+				}
+			],
+			"effects": [
+				{
+					"name": "validate",
+					"args": {
+						"return_value": "42"
+					}
+				}
+			]
+		}
+	]
+}
