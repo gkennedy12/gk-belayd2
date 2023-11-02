@@ -19,7 +19,8 @@ EXTRA_DIST_PYTHON_FILES = \
 check_PROGRAMS = \
 	002-register_cause \
 	003-register_plugin_cause \
-	004-register_plugin_cause
+	004-register_plugin_cause \
+	005-register_plugin_cause
 
 LDADD = -ljson-c ${top_builddir}/src/libbelayd.la
 
@@ -34,6 +35,12 @@ LDADD = -ljson-c ${top_builddir}/src/libbelayd.la
 	${top_srcdir}/src/plugins/causes/pressure_cause.c \
 	${top_srcdir}/src/plugins/utils/pressure_utils.c
 
+005_register_plugin_cause_CFLAGS = -I${top_srcdir}/src/plugins/causes
+005_register_plugin_cause_SOURCES = \
+	005-register_plugin_cause.c \
+	${top_srcdir}/src/plugins/causes/pressure_cause.c \
+	${top_srcdir}/src/plugins/utils/pressure_utils.c
+
 EXTRA_DIST_PYTHON_TESTS = \
 	001-cause-time_of_day.py
 
@@ -41,7 +48,8 @@ EXTRA_DIST_CFGS = \
 	001-cause-time_of_day.json.token \
 	002-register_cause.json \
 	003-register_plugin_cause.json \
-	004-register_plugin_cause.json
+	004-register_plugin_cause.json \
+	005-register_plugin_cause.json
 
 EXTRA_DIST = \
 	ftests-wrapper.sh \
