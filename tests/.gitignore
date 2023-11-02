@@ -1,5 +1,5 @@
 __pycache__/
 *.log
+*.trs
 002-register_cause
-003-register_plugin_cause
-004-register_plugin_cause
+*-register_plugin_cause
