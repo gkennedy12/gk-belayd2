@@ -21,6 +21,7 @@
 enum effect_enum {
 	EFFECT_PRINT = 0,
 	EFFECT_VALIDATE,
+	MEM_RESIZE,
 
 	EFFECT_CNT
 };
@@ -49,5 +50,10 @@ int validate_init(struct belayd_effect * const eff, struct json_object *eff_obj,
 		  const struct belayd_cause * const cse);
 int validate_main(struct belayd_effect * const eff);
 void validate_exit(struct belayd_effect * const eff);
+
+int mem_resize_init(struct belayd_effect * const eff, struct json_object *eff_obj,
+               const struct belayd_cause * const cse);
+int mem_resize_main(struct belayd_effect * const eff);
+void mem_resize_exit(struct belayd_effect * const eff);
 
 #endif /* __BELAYD_EFFECT_H */

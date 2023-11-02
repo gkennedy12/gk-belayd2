@@ -18,6 +18,7 @@
 const char * const effect_names[] = {
 	"print",
 	"validate",
+	"mem_resize",
 };
 static_assert(ARRAY_SIZE(effect_names) == EFFECT_CNT,
 	      "effect_names[] must be same length as EFFECT_CNT");
@@ -25,6 +26,7 @@ static_assert(ARRAY_SIZE(effect_names) == EFFECT_CNT,
 const struct belayd_effect_functions effect_fns[] = {
 	{print_init, print_main, print_exit},
 	{validate_init, validate_main, validate_exit},
+	{mem_resize_init, mem_resize_main, mem_resize_exit},
 };
 static_assert(ARRAY_SIZE(effect_fns) == EFFECT_CNT,
 	      "effect_fns[] must be same length as EFFECT_CNT");

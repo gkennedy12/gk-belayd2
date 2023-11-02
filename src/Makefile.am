@@ -13,6 +13,8 @@ SOURCES = \
 	effects/validate.c \
 	effect.c \
 	effect.h \
+	effects/mem_resize.c \
+	plugins/utils/pressure_utils.c \
 	log.c \
 	main.c \
 	parse.c
