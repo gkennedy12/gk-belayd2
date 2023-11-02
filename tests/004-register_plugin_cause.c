@@ -14,7 +14,7 @@
 
 #define AUTOMAKE_PASSED 0
 #define AUTOMAKE_HARD_ERROR 99
-#define EXPECTED_RET -123
+#define EXPECTED_RET -42
 
 int main(int argc, char *argv[])
 {
