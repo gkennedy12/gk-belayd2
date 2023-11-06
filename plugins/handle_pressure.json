@@ -1,0 +1,64 @@
+{
+	"rules": [
+		{
+			"name": "Handle pressure for VMs in machine.slice",
+			"description": "pressure greaterthan threshold for duration ?",
+			"causes": [
+				{
+					"name": "pressure",
+					"args": {
+						"pressure_slice": "belayd",
+						"threshold": "7",
+						"duration": "5",
+						"operator": "greaterthan",
+						"verbose": "1"
+					}
+				}
+			],
+			"effects": [
+				{
+					"name": "mem_resize",
+					"args": {
+						"pressure_slice": "belayd",
+						"managed_str": "belayd_managed_vm",
+						"qmp_path": "/work/qemu/qemu/scripts/qmp",
+						"threshold": "7",
+						"post_action_delay": "5",
+						"max_mem": "17",
+						"verbose": "4"
+					}
+				}
+			]
+		},
+		{
+			"name": "Handle pressure for VMs in machine.slice",
+			"description": "pressure lessthan threshold for duration ?",
+			"causes": [
+				{
+					"name": "pressure",
+					"args": {
+						"pressure_slice": "belayd",
+						"threshold": "2",
+						"duration": "10",
+						"operator": "lessthan",
+						"verbose": "1"
+					}
+				}
+			],
+			"effects": [
+				{
+					"name": "mem_resize",
+					"args": {
+						"pressure_slice": "belayd",
+						"managed_str": "belayd_managed_vm",
+						"qmp_path": "/work/qemu/qemu/scripts/qmp",
+						"threshold": "2",
+						"post_action_delay": "10",
+						"memory_reclaim": "1",
+						"verbose": "4"
+					}
+				}
+			]
+		}
+	]
+}
