@@ -71,7 +71,7 @@ AC_CONFIG_FILES([
 	src/plugins/Makefile
 	src/plugins/causes/Makefile
 	tests/Makefile
-	plugins/Makefile
+	standalone/Makefile
 ])
 
 dnl #
